@@ -1,0 +1,37 @@
+.opengraph_oembed_card {
+	border: 1px solid #999;
+	background-color: #eee;
+	padding: 10px;
+	margin-bottom: 20px;
+}
+
+.opengraph_oembed_card img {
+	display: block;
+	float:left;
+	margin: 0px 10px 10px 0px;
+	max-width: 100px;
+	max-height: 100px;
+}
+
+.opengraph_oembed_card h2,
+.entry-content .opengraph_oembed_card h2 {
+  clear:none;
+  margin-top: 0px;
+  margin-bottom: 10px;
+}
+
+.opengraph_oembed_card .opengraph_oembed_description {
+	clear:both;
+}
+
+.opengraph_oembed_description p {
+	margin-bottom: 10px;
+}
+
+.opengraph_oembed_card .opengraph_oembed_site {
+	font-size: 80%;
+	text-align: right;
+	font-style: italic;
+	color: #999;
+	margin-bottom: 0px;
+}
