@@ -32,6 +32,16 @@ class OpenGraph_oEmbed {
 				wp_embed_register_handler( $id, $regex, array( 'OpenGraph_oEmbed', 'oembed' ) );
 			}
 		}
+	    add_filter( "mce_external_plugins", array( 'OpenGraph_oEmbed', 'editor_button_js' ) );
+	    add_filter( 'mce_buttons', 			array( 'OpenGraph_oEmbed', 'editor_button' ) );
+	}
+	public static function editor_button_js( $plugin_array ) {
+    	$plugin_array['opengraph'] = plugins_url( 'opengraph-oembed-button.js', __FILE__ );
+	    return $plugin_array;
+	}
+	public static function editor_button( $buttons ) {
+	    array_push( $buttons, 'opengraph_shortcode' );
+	    return $buttons;
 	}
 	private static function _get_file( $url, $extension='php', $type = 'website', $theme ="default", $method='dir' ) {
 		$plugin_dir = plugin_dir_path( __FILE__ );
