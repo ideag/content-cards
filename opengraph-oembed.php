@@ -54,7 +54,9 @@ class OpenGraph_oEmbed {
 		return $template;
 	}
 	public static function admin_init() {
-		add_editor_style( self::$stylesheet );
+		if ( self::$stylesheet ) {
+			add_editor_style( self::$stylesheet );		
+		}
 	}
 	public static function admin_menu() {
 		require_once ( 'includes/options.php' );
@@ -87,8 +89,10 @@ class OpenGraph_oEmbed {
 		);		
 	}
 	public static function styles() {
-		wp_register_style( 'opengraph-oembed', self::$stylesheet );
-		wp_enqueue_style( 'opengraph-oembed' );
+		if ( self::$stylesheet ) {
+			wp_register_style( 'opengraph-oembed', self::$stylesheet );
+			wp_enqueue_style( 'opengraph-oembed' );
+		}
 	}
 	public static function oembed( $matches, $attr, $url, $rawattr ) {
 		$embed = self::build( $url );
