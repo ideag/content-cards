@@ -11,7 +11,8 @@ License: GPL2
 add_action( 'plugins_loaded', array( 'OpenGraph_oEmbed', 'init' ) );
 class OpenGraph_oEmbed {
 	public static $options = array(
-		'patterns' => "#http://wptavern\.com/?(.*?)/#i"
+		'patterns' => "#http://wptavern\.com/?(.*?)/#i",
+		'theme' => 'default',
 	);
 	private static $stylesheet = '';
 	public static function init() {
@@ -28,22 +29,22 @@ class OpenGraph_oEmbed {
 			wp_embed_register_handler( $id, $regex, array( 'OpenGraph_oEmbed', 'oembed' ) );
 		}
 	}
-	private static function _get_file( $url, $extension='php', $type = 'website', $method='dir' ) {
+	private static function _get_file( $url, $extension='php', $type = 'website', $theme ="default", $method='dir' ) {
 		$plugin_dir = plugin_dir_path( __FILE__ );
 		$plugin_uri = 'dir' === $method ? $plugin_dir : plugins_url( '/', __FILE__ );
 		$theme_dir = get_template_directory() . '/';
 		$theme_uri = 'dir' === $method ? $theme_dir : ( get_template_directory_uri() . '/' );
 		$child_theme_dir = get_stylesheet_directory() . '/';
 		$child_theme_uri = 'dir' === $method ? $child_theme_dir : ( get_stylesheet_directory_uri() . '/' );
-		$template =  "{$plugin_uri}templates/opengraph-oembed.{$extension}";
+		$template =  "{$plugin_uri}templates/{$theme}/opengraph-oembed.{$extension}";
 		if ( file_exists( "{$theme_dir}opengraph-oembed.{$extension}" ) ) {
 			$template = "{$theme_uri}opengraph-oembed.{$extension}";
 		}
 		if ( file_exists( "{$child_theme_dir}opengraph-oembed.{$extension}" ) ) {
 			$template = "{$child_theme_uri}opengraph-oembed.{$extension}";
 		}
-		if ( file_exists( "{$plugin_dir}templates/opengraph-oembed-{$type}.{$extension}" ) ) {
-			$template = "{$plugin_uri}templates/opengraph-oembed-{$type}.{$extension}";
+		if ( file_exists( "{$plugin_dir}templates/{$theme}/opengraph-oembed-{$type}.{$extension}" ) ) {
+			$template = "{$plugin_uri}templates/{$theme}/opengraph-oembed-{$type}.{$extension}";
 		}
 		if ( file_exists( "{$theme_dir}opengraph-oembed-{$type}.{$extension}" ) ) {
 			$template = "{$theme_uri}opengraph-oembed-{$type}.{$extension}";
@@ -55,13 +56,13 @@ class OpenGraph_oEmbed {
 		return $template;
 	}
 	private static function get_template( $url, $type = 'website' ) {
-		$template = self::_get_file( $url, 'php', $type );
+		$template = self::_get_file( $url, 'php', $type, self::$options['theme'] );
 		$template = apply_filters( 'opengraph_oembed_template', $template, $url );
 		$template = file_get_contents( $template );
 		return $template;
 	}
 	private static function get_stylesheet( ) {
-		$template = self::_get_file( false, 'css', '', 'uri' );
+		$template = self::_get_file( false, 'css', '', self::$options['theme'], 'uri'  );
 		$template = apply_filters( 'opengraph_oembed_stylesheet', $template );
 		return $template;
 	}
@@ -85,6 +86,14 @@ class OpenGraph_oEmbed {
 							'description' => __( 'A list of <code>regex</code> link patterns, one per line.', 'opengraph-oembed' ),
 						),
 						'callback' => 'textarea',
+					),
+					'theme' => array(
+						'title'=>__('Snippet theme','opengraph-oembed'),
+						'args' => array (
+							'values' => array('default','fancy'),
+							'description' => __( 'Can be overwritten by theme.', 'opengraph-oembed' ),
+						),
+						'callback' => 'select',
 					),
 				),
 			),
