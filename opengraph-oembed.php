@@ -130,7 +130,7 @@ class OpenGraph_oEmbed {
 		return $result;
 	}
 	private static function get_data( $url ) {
-		$result = get_transient( 'opengraph_oembed_'.md5( $url ) );
+		$result = get_transient( 'og_oembed_'.md5( $url ) );
 		if ( !$result ) {
 			require_once( 'includes/opengraph.php' );
 			$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
@@ -143,7 +143,7 @@ class OpenGraph_oEmbed {
 					}				
 				}
 				if ( $result ) {
-					set_transient( 'opengraph_oembed_'.md5( $url ), $result, DAY_IN_SECONDS );
+					set_transient( 'og_oembed_'.md5( $url ), $result, DAY_IN_SECONDS );
 				}				
 			}
 		}
