@@ -4,5 +4,5 @@
 		<h2>%%title%%</h2>
 		<div class="opengraph_oembed_description">%%description%%</div>
 	</a>
-	<p class="opengraph_oembed_site">general via %%site_name%%</p>
+	<p class="opengraph_oembed_site">via %%site_name%%</p>
 </div>
