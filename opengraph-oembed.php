@@ -11,7 +11,7 @@ License: GPL2
 add_action( 'plugins_loaded', array( 'OpenGraph_oEmbed', 'init' ) );
 class OpenGraph_oEmbed {
 	public static $options = array(
-		'patterns' => "#http://wptavern\.com/?(.*?)/#i",
+		'patterns' => "wptavern.com\r\nwordpress.org",
 		'theme' => 'default',
 	);
 	private static $stylesheet = '';
@@ -25,8 +25,12 @@ class OpenGraph_oEmbed {
 		add_shortcode( 'opengraph', 		array( 'OpenGraph_oEmbed', 'shortcode' ) );
 		$patterns = self::$options['patterns'];
 		$patterns = explode( "\r\n", $patterns );
-		foreach ( $patterns as $id => $regex) {
-			wp_embed_register_handler( $id, $regex, array( 'OpenGraph_oEmbed', 'oembed' ) );
+		if ( is_array( $patterns ) ) {
+			foreach ( $patterns as $id => $domain) {
+				$domain = str_replace( '.', '\.', $domain );
+				$regex = "#https?://(www\.)?{$domain}/?(.*?)#i";
+				wp_embed_register_handler( $id, $regex, array( 'OpenGraph_oEmbed', 'oembed' ) );
+			}
 		}
 	}
 	private static function _get_file( $url, $extension='php', $type = 'website', $theme ="default", $method='dir' ) {
@@ -79,11 +83,11 @@ class OpenGraph_oEmbed {
 				'callback' => '',
 				'options' => array(
 					'patterns' => array(
-						'title'=>__('oEmbed Whitelist','opengraph-oembed'),
+						'title'=>__('oEmbed White List','opengraph-oembed'),
 						'args' => array (
 							'rows' 		  => 10,
 							'cols'		  => 60,
-							'description' => __( 'A list of <code>regex</code> link patterns, one per line.', 'opengraph-oembed' ),
+							'description' => __( 'A list of domain names, i.e. <code>domain.com</code>, one per line.', 'opengraph-oembed' ),
 						),
 						'callback' => 'textarea',
 					),
