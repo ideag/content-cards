@@ -140,7 +140,7 @@ class OpenGraph_oEmbed {
 		} else {
 			$data['image'] = "";
 		}
-		$type = $data['type'];
+		$type = isset( $data['type'] ) ? $data['type'] : 'website';
 		foreach( $data as $key => $value ) {
 			unset( $data[$key] );
 			$data["%%{$key}%%"] = $value;
