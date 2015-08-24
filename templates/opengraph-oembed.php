@@ -1,5 +1,5 @@
 <div class="opengraph_oembed_card">
-		<a href="%%url%%">
+		<a href="%%url%%" target="_blank">
 		%%image%%
 		<h2>%%title%%</h2>
 		<div class="opengraph_oembed_description">%%description%%</div>
