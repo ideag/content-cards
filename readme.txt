@@ -11,7 +11,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-This plugin allows you to display links to other websites as rich snippets, utilising the OpenGraph data that they provide.
+This plugin allows you to display links to other websites as rich snippets, utilizing the OpenGraph data that they provide.
 
 You can insert a snippet via shortcode `[contentcards url="http://yoursite.com/article-1"]` or whitelist it as an oEmbed provider via plugnin's Settings page.
 
@@ -23,7 +23,7 @@ The shortcode accepts a single attribute - `url`, all other attributes and the c
 
 = oEmbed = 
 
-Whitelist the site in question in the plugin's Settings and use it like any other oEmbed provider - just put plaintext link in a separate line. Whitelist accepts `regex` patterns, one pattern per line.
+Whitelist the site in question in the plugin's Settings and use it like any other oEmbed provider - just put plaintext link in a separate line. Whitelist accepts domain names, one name per line.
 
 == Installation ==
 
