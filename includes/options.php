@@ -1,7 +1,7 @@
 <?php
 // ========================================== SETTINGS
 
-class OpenGraph_oEmbed_Options {
+class Content_Cards_Options {
   private static $defaults = array();
   private static $fields = array();
   private static $tabs = array();
@@ -23,18 +23,18 @@ class OpenGraph_oEmbed_Options {
     self::$parent_class = $parent_class;
     self::$role         = $role ? $role : self::$role;
     self::build_settings();
-    add_options_page(self::$title, self::$menu_title, self::$role, self::$file, array('OpenGraph_oEmbed_Options','page'));
+    add_options_page(self::$title, self::$menu_title, self::$role, self::$file, array('Content_Cards_Options','page'));
   }
 
   // Register our settings. Add the settings section, and settings fields
   public static function build_settings(){
-    register_setting( self::$id, self::$id, array( 'OpenGraph_oEmbed_Options' , 'validate' ) );
+    register_setting( self::$id, self::$id, array( 'Content_Cards_Options' , 'validate' ) );
     if (is_array(self::$fields)) foreach (self::$fields as $group_id => $group) {
-      add_settings_section( $group_id, $group['title'], $group['callback']?is_array($group['callback'])?$group['callback']:array('OpenGraph_oEmbed_Options',$group['callback']):'', self::$file );
+      add_settings_section( $group_id, $group['title'], $group['callback']?is_array($group['callback'])?$group['callback']:array('Content_Cards_Options',$group['callback']):'', self::$file );
       if (is_array($group['options'])) foreach ($group['options'] as $option_id => $option) {
         $option['args']['option_id'] = $option_id;
         $option['args']['title'] = $option['title'];
-        add_settings_field($option_id, $option['title'], $option['callback']?is_array($option['callback'])?$option['callback']:array('OpenGraph_oEmbed_Options',$option['callback']):'', self::$file, $group_id,$option['args']);
+        add_settings_field($option_id, $option['title'], $option['callback']?is_array($option['callback'])?$option['callback']:array('Content_Cards_Options',$option['callback']):'', self::$file, $group_id,$option['args']);
       }
     }
   }
@@ -57,13 +57,13 @@ class OpenGraph_oEmbed_Options {
     if (self::is_assoc($items)) {
       foreach($items as $key=>$item) {
         $key = esc_attr($key);
-        $selected = selected( $key, OpenGraph_oEmbed::$options[$args['option_id']], false );
+        $selected = selected( $key, Content_Cards::$options[$args['option_id']], false );
         echo "<option value='{$key}' $selected>$item</option>";
       }
     } else {
       foreach($items as $item) {
         $key = esc_attr($item);
-        $selected = selected( $item, OpenGraph_oEmbed::$options[$args['option_id']], false );
+        $selected = selected( $item, Content_Cards::$options[$args['option_id']], false );
         echo "<option value='{$key}' $selected>$item</option>";
       }
     }
@@ -72,10 +72,10 @@ class OpenGraph_oEmbed_Options {
 
   // CHECKBOX - Name: checkbox
   public static function checkbox($args) {
-    if (!isset(OpenGraph_oEmbed::$options[$args['option_id']])) {
-      OpenGraph_oEmbed::$options[$args['option_id']] = false;
+    if (!isset(Content_Cards::$options[$args['option_id']])) {
+      Content_Cards::$options[$args['option_id']] = false;
     }
-    $checked = checked( OpenGraph_oEmbed::$options[$args['option_id']], true, false );
+    $checked = checked( Content_Cards::$options[$args['option_id']], true, false );
     $description = isset( $args['description'] ) ? "<p class=\"description\">{$args['description']}</p>": '';
     echo "<input ".$checked." id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' type='checkbox' value=\"1\"/>{$description}";
   }
@@ -85,21 +85,21 @@ class OpenGraph_oEmbed_Options {
     if (!$args['rows']) $args['rows']=4;
     if (!$args['cols']) $args['cols']=20;
     $description = isset( $args['description'] ) ? "<p class=\"description\">{$args['description']}</p>": '';
-    echo "<textarea id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' rows='{$args['rows']}' cols='{$args['cols']}' type='textarea'>".OpenGraph_oEmbed::$options[$args['option_id']]."</textarea>{$description}";
+    echo "<textarea id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' rows='{$args['rows']}' cols='{$args['cols']}' type='textarea'>".Content_Cards::$options[$args['option_id']]."</textarea>{$description}";
   }
 
   // TEXTBOX - Name: text - Arguments: size:int=40
   public static function text($args) {
     if ( !isset($args['size']) ) $args['size']=40;
     $description = isset( $args['description'] ) ? "<p class=\"description\">{$args['description']}</p>": '';
-    echo "<input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' size='{$args['size']}' type='text' value='".esc_attr( OpenGraph_oEmbed::$options[$args['option_id']] )."' />{$description}";
+    echo "<input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' size='{$args['size']}' type='text' value='".esc_attr( Content_Cards::$options[$args['option_id']] )."' />{$description}";
   }
 
   // TEXTBOX CUSTOM - Name: text_plugins - Arguments: size:int=40
   public static function text_plugins($args) {
     if ( !isset($args['size']) ) $args['size']=40;
     $description = isset( $args['description'] ) ? "<p class=\"description\">{$args['description']}</p>": '';
-    echo "<code>WP_CONTENT_DIR/plugins-</code> <input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' size='{$args['size']}' type='text' value='".esc_attr( OpenGraph_oEmbed::$options[$args['option_id']] )."' />{$description}";
+    echo "<code>WP_CONTENT_DIR/plugins-</code> <input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' size='{$args['size']}' type='text' value='".esc_attr( Content_Cards::$options[$args['option_id']] )."' />{$description}";
   }
 
   // NUMBER TEXTBOX - Name: text - Arguments: size:int=40
@@ -113,13 +113,13 @@ class OpenGraph_oEmbed_Options {
         $options .= " {$key}=\"{$value}\"";
       }
     }
-    echo "<input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' type='number' value='".OpenGraph_oEmbed::$options[$args['option_id']]."'{$options}/>";
+    echo "<input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' type='number' value='".Content_Cards::$options[$args['option_id']]."'{$options}/>";
   }
 
   // PASSWORD-TEXTBOX - Name: password - Arguments: size:int=40
   public static function password($args) {
     if (!$args['size']) $args['size']=40;
-    echo "<input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' size='{$args['size']}' type='password' value='".OpenGraph_oEmbed::$options[$args['option_id']]."' />";
+    echo "<input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' size='{$args['size']}' type='password' value='".Content_Cards::$options[$args['option_id']]."' />";
   }
 
   // RADIO-BUTTON - Name: plugin_options[option_set1]
@@ -127,12 +127,12 @@ class OpenGraph_oEmbed_Options {
     $items = $args['values'];
     if (self::is_assoc($items)) {
       foreach($items as $key=>$item) {
-        $checked = checked( $key, OpenGraph_oEmbed::$options[$args['option_id']], false );
+        $checked = checked( $key, Content_Cards::$options[$args['option_id']], false );
         echo "<label><input ".$checked." value='$key' name='".self::$id."[{$args['option_id']}]' type='radio' /> $item</label><br />";
       }
     } else {
       foreach($items as $item) {
-        $checked = checked( $item, OpenGraph_oEmbed::$options[$args['option_id']], false );
+        $checked = checked( $item, Content_Cards::$options[$args['option_id']], false );
         echo "<label><input ".$checked." value='$item' name='".self::$id."[{$args['option_id']}]' type='radio' /> $item</label><br />";
       }
     }
@@ -142,8 +142,8 @@ class OpenGraph_oEmbed_Options {
     $items = $args['values'];
     if (self::is_assoc($items)) {
       foreach($items as $key=>$item) {
-        if ( is_array( OpenGraph_oEmbed::$options[$args['option_id']] ) ) {
-          $checked = checked( in_array( $key, OpenGraph_oEmbed::$options[$args['option_id']] ), true, false );
+        if ( is_array( Content_Cards::$options[$args['option_id']] ) ) {
+          $checked = checked( in_array( $key, Content_Cards::$options[$args['option_id']] ), true, false );
         } else {
           $checked = checked( true, false, false );
         }
@@ -151,8 +151,8 @@ class OpenGraph_oEmbed_Options {
       }
     } else {
       foreach($items as $item) {
-        if ( is_array( OpenGraph_oEmbed::$options[$args['option_id']] ) ) {
-          $checked = checked( in_array( $item, OpenGraph_oEmbed::$options[$args['option_id']] ), true, false );
+        if ( is_array( Content_Cards::$options[$args['option_id']] ) ) {
+          $checked = checked( in_array( $item, Content_Cards::$options[$args['option_id']] ), true, false );
         } else {
           $checked = checked( true, false, false );
         }
@@ -187,12 +187,12 @@ class OpenGraph_oEmbed_Options {
     <?php
   }
   public static function content( $current ) {
-    $callback = array( 'OpenGraph_oEmbed_Options', 'settings');
+    $callback = array( 'Content_Cards_Options', 'settings');
     if ( isset( self::$tabs[$current]['callback'] ) ) {
       if ( is_callable( self::$tabs[$current]['callback'] ) ) {
         $callback = self::$tabs[$current]['callback'];
       } else {
-        $callback = array( 'OpenGraph_oEmbed_Options', self::$tabs[$current]['callback'] );
+        $callback = array( 'Content_Cards_Options', self::$tabs[$current]['callback'] );
       }
     }
     return $callback;
@@ -220,7 +220,7 @@ class OpenGraph_oEmbed_Options {
 
   // Validate user data for some/all of your input fields
   public static function validate($input) {
-//    $input = apply_filters( 'opengraph_oembed_options_validate', $input );
+//    $input = apply_filters( 'content_cards_options_validate', $input );
     return $input; // return validated input
   }
 

@@ -1,4 +1,4 @@
-=== OpenGraph oEmbed ===
+=== Content Cards ===
 
 Contributors: ideag
 Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet
@@ -13,7 +13,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 This plugin allows you to display links to other websites as rich snippets, utilising the OpenGraph data that they provide.
 
-You can insert a snippet via shortcode `[opengraph url="http://yoursite.com/article-1"]` or whitelist it as an oEmbed provider via plugnin's Settings page.
+You can insert a snippet via shortcode `[contentcards url="http://yoursite.com/article-1"]` or whitelist it as an oEmbed provider via plugnin's Settings page.
 
 == Frequently Asked Questions ==
 
@@ -28,7 +28,7 @@ Whitelist the site in question in the plugin's Settings and use it like any othe
 == Installation ==
 
 * Go to your admin area and select Plugins -> Add new from the menu.
-* Search for "OpenGraph oEmbed".
+* Search for "Content Cards".
 * Click install.
 * Click activate.
 

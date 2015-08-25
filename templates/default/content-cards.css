@@ -1,12 +1,11 @@
-.opengraph_oembed_card {
+.content_cards_card {
 	border: 1px solid #999;
-	background-color: #333;
-	color: #fff;
+	background-color: #eee;
 	padding: 10px;
 	margin-bottom: 20px;
 }
 
-.opengraph_oembed_card img {
+.content_cards_card img {
 	display: block;
 	float:left;
 	margin: 0px 10px 10px 0px;
@@ -14,22 +13,22 @@
 	max-height: 100px;
 }
 
-.opengraph_oembed_card h2,
-.entry-content .opengraph_oembed_card h2 {
+.content_cards_card h2,
+.entry-content .content_cards_card h2 {
   clear:none;
   margin-top: 0px;
   margin-bottom: 10px;
 }
 
-.opengraph_oembed_card .opengraph_oembed_description {
+.content_cards_card .content_cards_description {
 	clear:both;
 }
 
-.opengraph_oembed_description p {
+.content_cards_description p {
 	margin-bottom: 10px;
 }
 
-.opengraph_oembed_card .opengraph_oembed_site {
+.content_cards_card .content_cards_site {
 	font-size: 80%;
 	text-align: right;
 	font-style: italic;

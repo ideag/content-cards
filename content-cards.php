@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: OpenGraph oEmbed
+Plugin Name: Content Cards
 Description: Pull OpenGraph data from other websites and show them as "Cards"
 Version: 0.1.0
 Author: Arūnas Liuiza
@@ -8,39 +8,41 @@ Author URI: http://arunas.co
 License: GPL2
 */
 
-add_action( 'plugins_loaded', array( 'OpenGraph_oEmbed', 'init' ) );
-class OpenGraph_oEmbed {
+add_action( 'plugins_loaded', array( 'Content_Cards', 'init' ) );
+class Content_Cards {
 	public static $options = array(
 		'patterns' => "wptavern.com\r\nwordpress.org",
 		'theme' => 'default',
 	);
 	private static $stylesheet = '';
 	public static function init() {
-		$options = get_option( 'opengraph-oembed_options' );
+		$options = get_option( 'content-cards_options' );
 		self::$options = wp_parse_args( $options, self::$options );
 		self::$stylesheet = self::get_stylesheet();
-		add_action( 'wp_enqueue_scripts', 	array( 'OpenGraph_oEmbed', 'styles' ) );
-		add_action( 'admin_init', 			array( 'OpenGraph_oEmbed', 'admin_init' ) );
-		add_action( 'admin_menu', 			array( 'OpenGraph_oEmbed', 'admin_menu' ) );
-		add_shortcode( 'opengraph', 		array( 'OpenGraph_oEmbed', 'shortcode' ) );
+		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
+		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
+		add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
+		add_shortcode( 'contentcard', 		array( 'Content_Cards', 'shortcode' ) );
+		add_shortcode( 'opengraph', 		array( 'Content_Cards', 'shortcode' ) );
+		add_shortcode( 'contentcards', 		array( 'Content_Cards', 'shortcode' ) );
 		$patterns = self::$options['patterns'];
 		$patterns = explode( "\r\n", $patterns );
 		if ( is_array( $patterns ) ) {
 			foreach ( $patterns as $id => $domain) {
 				$domain = str_replace( '.', '\.', $domain );
 				$regex = "#https?://(www\.)?{$domain}/?(.*?)#i";
-				wp_embed_register_handler( $id, $regex, array( 'OpenGraph_oEmbed', 'oembed' ) );
+				wp_embed_register_handler( $id, $regex, array( 'Content_Cards', 'oembed' ) );
 			}
 		}
-	    add_filter( "mce_external_plugins", array( 'OpenGraph_oEmbed', 'editor_button_js' ) );
-	    add_filter( 'mce_buttons', 			array( 'OpenGraph_oEmbed', 'editor_button' ) );
+	    add_filter( "mce_external_plugins", array( 'Content_Cards', 'editor_button_js' ) );
+	    add_filter( 'mce_buttons', 			array( 'Content_Cards', 'editor_button' ) );
 	}
 	public static function editor_button_js( $plugin_array ) {
-    	$plugin_array['opengraph'] = plugins_url( 'opengraph-oembed-button.js', __FILE__ );
+    	$plugin_array['contentcards'] = plugins_url( 'content-cards-button.js', __FILE__ );
 	    return $plugin_array;
 	}
 	public static function editor_button( $buttons ) {
-	    array_push( $buttons, 'opengraph_shortcode' );
+	    array_push( $buttons, 'contentcards_shortcode' );
 	    return $buttons;
 	}
 	private static function _get_file( $url, $extension='php', $type = 'website', $theme ="default", $method='dir' ) {
@@ -50,34 +52,34 @@ class OpenGraph_oEmbed {
 		$theme_uri = 'dir' === $method ? $theme_dir : ( get_template_directory_uri() . '/' );
 		$child_theme_dir = get_stylesheet_directory() . '/';
 		$child_theme_uri = 'dir' === $method ? $child_theme_dir : ( get_stylesheet_directory_uri() . '/' );
-		$template =  "{$plugin_uri}templates/{$theme}/opengraph-oembed.{$extension}";
-		if ( file_exists( "{$theme_dir}opengraph-oembed.{$extension}" ) ) {
-			$template = "{$theme_uri}opengraph-oembed.{$extension}";
+		$template =  "{$plugin_uri}templates/{$theme}/content-cards.{$extension}";
+		if ( file_exists( "{$theme_dir}content-cards.{$extension}" ) ) {
+			$template = "{$theme_uri}content-cards.{$extension}";
 		}
-		if ( file_exists( "{$child_theme_dir}opengraph-oembed.{$extension}" ) ) {
-			$template = "{$child_theme_uri}opengraph-oembed.{$extension}";
+		if ( file_exists( "{$child_theme_dir}content-cards.{$extension}" ) ) {
+			$template = "{$child_theme_uri}content-cards.{$extension}";
 		}
-		if ( file_exists( "{$plugin_dir}templates/{$theme}/opengraph-oembed-{$type}.{$extension}" ) ) {
-			$template = "{$plugin_uri}templates/{$theme}/opengraph-oembed-{$type}.{$extension}";
+		if ( file_exists( "{$plugin_dir}templates/{$theme}/content-cards-{$type}.{$extension}" ) ) {
+			$template = "{$plugin_uri}templates/{$theme}/content-cards-{$type}.{$extension}";
 		}
-		if ( file_exists( "{$theme_dir}opengraph-oembed-{$type}.{$extension}" ) ) {
-			$template = "{$theme_uri}opengraph-oembed-{$type}.{$extension}";
+		if ( file_exists( "{$theme_dir}content-cards-{$type}.{$extension}" ) ) {
+			$template = "{$theme_uri}content-cards-{$type}.{$extension}";
 		}
-		if ( file_exists( "{$child_theme_dir}opengraph-oembed-{$type}.{$extension}" ) ) {
-			$template = "{$child_theme_uri}opengraph-oembed-{$type}.{$extension}";
+		if ( file_exists( "{$child_theme_dir}content-cards-{$type}.{$extension}" ) ) {
+			$template = "{$child_theme_uri}content-cards-{$type}.{$extension}";
 		}
-		$template = apply_filters( 'opengraph_oembed_file', $template, $url, $extension );
+		$template = apply_filters( 'content_cards_file', $template, $url, $extension );
 		return $template;
 	}
 	private static function get_template( $url, $type = 'website' ) {
 		$template = self::_get_file( $url, 'php', $type, self::$options['theme'] );
-		$template = apply_filters( 'opengraph_oembed_template', $template, $url );
+		$template = apply_filters( 'content_cards_template', $template, $url );
 		$template = file_get_contents( $template );
 		return $template;
 	}
 	private static function get_stylesheet( ) {
 		$template = self::_get_file( false, 'css', '', self::$options['theme'], 'uri'  );
-		$template = apply_filters( 'opengraph_oembed_stylesheet', $template );
+		$template = apply_filters( 'content_cards_stylesheet', $template );
 		return $template;
 	}
 	public static function admin_init() {
@@ -93,19 +95,19 @@ class OpenGraph_oEmbed {
 				'callback' => '',
 				'options' => array(
 					'patterns' => array(
-						'title'=>__('oEmbed White List','opengraph-oembed'),
+						'title'=>__('oEmbed White List','content-cards'),
 						'args' => array (
 							'rows' 		  => 10,
 							'cols'		  => 60,
-							'description' => __( 'A list of domain names, i.e. <code>domain.com</code>, one per line.', 'opengraph-oembed' ),
+							'description' => __( 'A list of domain names, i.e. <code>domain.com</code>, one per line.', 'content-cards' ),
 						),
 						'callback' => 'textarea',
 					),
 					'theme' => array(
-						'title'=>__('Snippet theme','opengraph-oembed'),
+						'title'=>__('Snippet theme','content-cards'),
 						'args' => array (
 							'values' => array('default','fancy'),
-							'description' => __( 'Can be overwritten by theme.', 'opengraph-oembed' ),
+							'description' => __( 'Can be overwritten by theme.', 'content-cards' ),
 						),
 						'callback' => 'select',
 					),
@@ -113,25 +115,25 @@ class OpenGraph_oEmbed {
 			),
 		);
 		$tabs = array();
-		OpenGraph_oEmbed_Options::init(
-			'opengraph-oembed',
-			__( 'OpenGraph oEmbed',          'opengraph-oembed' ),
-			__( 'OpenGraph oEmbed Settings', 'opengraph-oembed' ),
+		Content_Cards_Options::init(
+			'content-cards',
+			__( 'Content Cards',          'content-cards' ),
+			__( 'Content Cards Settings', 'content-cards' ),
 			$fields,
 			$tabs,
-			'OpenGraph_oEmbed',
-			'opengraph-oembed-settings'
+			'Content_Cards',
+			'content-cards-settings'
 		);		
 	}
 	public static function styles() {
 		if ( self::$stylesheet ) {
-			wp_register_style( 'opengraph-oembed', self::$stylesheet );
-			wp_enqueue_style( 'opengraph-oembed' );
+			wp_register_style( 'content-cards', self::$stylesheet );
+			wp_enqueue_style( 'content-cards' );
 		}
 	}
 	public static function oembed( $matches, $attr, $url, $rawattr ) {
 		$embed = self::build( $url );
-		return apply_filters( 'embed_opengraph_oembed', $embed, $matches, $attr, $url, $rawattr );
+		return apply_filters( 'embed_content_cards', $embed, $matches, $attr, $url, $rawattr );
 	}
 	public static function shortcode( $args, $content = '') {
 		$result = '';

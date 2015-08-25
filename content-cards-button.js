@@ -1,18 +1,18 @@
 ( function() {
-    tinymce.PluginManager.add( 'opengraph', function( editor, url ) {
-        editor.addButton( 'opengraph_shortcode', {
-            text: 'OG',
+    tinymce.PluginManager.add( 'contentcards', function( editor, url ) {
+        editor.addButton( 'contentcards_shortcode', {
+            text: 'CC',
             icon: false,
             onclick: function() {
                 editor.windowManager.open( {
-                    title: 'Add OpenGraph Link',
+                    title: 'Add Content Card',
                     body: [{
                         type: 'textbox',
                         name: 'uri',
                         label: 'Link URI'
                     }],
                     onsubmit: function( e ) {
-                        editor.insertContent( '[opengraph url="' + e.data.uri + '"] ' );
+                        editor.insertContent( '[contentcards url="' + e.data.uri + '"] ' );
                     }
                 } );
             }
