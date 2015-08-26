@@ -2,7 +2,7 @@
 /*
 Plugin Name: Content Cards
 Description: Pull OpenGraph data from other websites and show them as "Cards"
-Version: 0.1.0
+Version: 0.2.0
 Author: Arūnas Liuiza
 Author URI: http://arunas.co
 License: GPL2
@@ -15,6 +15,7 @@ class Content_Cards {
 		'skin' => 'default',
 	);
 	private static $stylesheet = '';
+	public static $temp_data = array();
 	public static function init() {
 		$options = get_option( 'content-cards_options' );
 		self::$options = wp_parse_args( $options, self::$options );
@@ -78,7 +79,7 @@ class Content_Cards {
 	private static function get_template( $url, $type = 'website' ) {
 		$template = self::_get_file( $url, 'php', $type, self::$options['skin'] );
 		$template = apply_filters( 'content_cards_template', $template, $url );
-		$template = file_get_contents( $template );
+		// $template = file_get_contents( $template );
 		return $template;
 	}
 	private static function get_stylesheet( ) {
@@ -155,23 +156,14 @@ class Content_Cards {
 		}
 		$data['description'] = wpautop($data['description']);
 		$data['url'] = $url;
-		if ( isset($data['image']) ) {
-			$data['image'] = "<img src=\"{$data['image']}\" alt=\"\"/>";
-		} else {
-			$data['image'] = "";
-		}
 		$type = isset( $data['type'] ) ? $data['type'] : 'website';
-		foreach( $data as $key => $value ) {
-			unset( $data[$key] );
-			$data["%%{$key}%%"] = $value;
-		}
-		$template = self::get_template( $url, $type );;
-
-		$result = str_replace( 
-			array_keys($data), 
-			array_values($data), 
-			$template 
-		);
+		$data = apply_filters( 'content_cards_data', $data, $url );
+		self::$temp_data = $data;
+		$template = self::get_template( $url, $type );
+		ob_start();
+		require( $template );
+		$result = ob_get_contents();
+		ob_end_clean();
 		return $result;
 	}
 	private static function get_data( $url ) {
@@ -195,3 +187,10 @@ class Content_Cards {
 		return $result;
 	}
 } 
+
+function get_cc_data( $key ) {
+	return Content_Cards::$temp_data[$key];
+}
+function the_cc_data( $key ) {
+	echo Content_Cards::$temp_data[$key];
+}

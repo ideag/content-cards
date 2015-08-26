@@ -6,6 +6,10 @@
 	margin-bottom: 20px;
 }
 
+.content_cards_card * {
+	color:#fff;
+}
+
 .content_cards_card img {
 	display: block;
 	float:left;
