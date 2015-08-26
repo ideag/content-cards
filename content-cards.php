@@ -80,7 +80,6 @@ class Content_Cards {
 	private static function get_template( $url, $type = 'website' ) {
 		$template = self::_get_file( $url, 'php', $type, self::$options['skin'] );
 		$template = apply_filters( 'content_cards_template', $template, $url );
-		// $template = file_get_contents( $template );
 		return $template;
 	}
 	private static function get_stylesheet( ) {
@@ -112,7 +111,7 @@ class Content_Cards {
 					'skin' => array(
 						'title'=>__('Snippet Skin','content-cards'),
 						'args' => array (
-							'values' => array('default','fancy'),
+							'values' => self::get_skins(),
 							'description' => __( 'Can be overwritten by theme.', 'content-cards' ),
 						),
 						'callback' => 'select',
@@ -137,6 +136,41 @@ class Content_Cards {
 			'Content_Cards',
 			'content-cards-settings'
 		);		
+	}
+	private static function get_skins() {
+		$dir = plugin_dir_path( __FILE__ );
+		$dir .= 'skins/*';
+		$list = glob($dir);
+		$skins = array();
+		foreach ( $list as $skin ) {
+			$key = basename($skin);
+			$data = self::get_skin_data( $skin );
+			if ( !$data['name'] ) {
+				continue;
+			}
+			$name = $data['name'];
+			// if ( $data['version'] ) {
+			// 	$name .= " {$data['version']}";
+			// }
+			// if ( $data['author'] ) {
+			// 	$name .= " by {$data['author']}";
+			// }
+			$skins[$key] = $name;
+		}
+		return $skins;
+	}
+	private static function get_skin_data( $dir ) {
+		$stylesheet = $dir."/content-cards.css";
+		if ( !file_exists( $stylesheet ) ) {
+			return false;
+		}
+		$default = array(
+			'name' 		=> 'Skin Name',
+			'version' 	=> 'Version',
+			'author'  	=> 'Author',
+		);
+		$skin_data = get_file_data( $stylesheet, $default, 'cc_skin' );
+		return $skin_data;
 	}
 	public static function styles() {
 		if ( self::$stylesheet ) {

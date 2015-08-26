@@ -1,13 +1,13 @@
+/*
+Skin Name: Default
+Version: 1.0.0
+Author: Arūnas Liuiza
+*/
 .content_cards_card {
 	border: 1px solid #999;
-	background-color: #333;
-	color: #fff;
+	background-color: #eee;
 	padding: 10px;
 	margin-bottom: 20px;
-}
-
-.content_cards_card * {
-	color:#fff;
 }
 
 .content_cards_card img {

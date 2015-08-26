@@ -1,8 +1,18 @@
+/*
+Skin Name: Fancy
+Version: 1.0.0
+Author: Arūnas Liuiza
+*/
 .content_cards_card {
 	border: 1px solid #999;
-	background-color: #eee;
+	background-color: #333;
+	color: #fff;
 	padding: 10px;
 	margin-bottom: 20px;
+}
+
+.content_cards_card * {
+	color:#fff;
 }
 
 .content_cards_card img {
