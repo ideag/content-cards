@@ -77,7 +77,8 @@ class Content_Cards_Options {
     }
     $checked = checked( Content_Cards::$options[$args['option_id']], true, false );
     $description = isset( $args['description'] ) ? "<p class=\"description\">{$args['description']}</p>": '';
-    echo "<input ".$checked." id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' type='checkbox' value=\"1\"/>{$description}";
+    $label = isset( $args['label'] ) ? $args['label'] : '';
+    echo "<label for=\"{$args['option_id']}\"><input ".$checked." id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' type='checkbox' value=\"1\"/>{$label}</label>{$description}";
   }
 
   // TEXTAREA - Name: textarea - Arguments: rows:int=4 cols:int=20

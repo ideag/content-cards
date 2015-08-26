@@ -13,6 +13,7 @@ class Content_Cards {
 	public static $options = array(
 		'patterns' => "wptavern.com\r\nwordpress.org",
 		'skin' => 'default',
+		'target' => false,
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
@@ -116,6 +117,13 @@ class Content_Cards {
 						),
 						'callback' => 'select',
 					),
+					'target' => array(
+						'title'=> __('Link Target','content-cards'),
+						'args' => array (
+							'label'			=> __('Open links in new tab?','content-cards'),
+						),
+						'callback' => 'checkbox',
+					),
 				),
 			),
 		);
@@ -145,10 +153,18 @@ class Content_Cards {
 		if ( !isset( $args['url'] ) ) {
 			return $result;
 		}
-		$result = self::build( $args['url'] );
+		if ( isset( $args['target'] ) &&  in_array( $args['target'], array( true, 'true', 'blank', '_blank' ) ) ) {
+			$target = true;
+		} else {
+			$target = null;
+		}
+		$result = self::build( $args['url'], $target );
 		return $result;
 	}
-	public static function build( $url ) {
+	public static function build( $url, $target = null ) {
+		if ( null === $target ) {
+			$target = self::$options['target'];
+		}
 		$data = self::get_data( $url );
 		$result = "";
 		if ( !$data ) {
@@ -156,6 +172,7 @@ class Content_Cards {
 		}
 		$data['description'] = wpautop($data['description']);
 		$data['url'] = $url;
+		$data['target'] = $target;
 		$type = isset( $data['type'] ) ? $data['type'] : 'website';
 		$data = apply_filters( 'content_cards_data', $data, $url );
 		self::$temp_data = $data;
@@ -193,4 +210,7 @@ function get_cc_data( $key ) {
 }
 function the_cc_data( $key ) {
 	echo Content_Cards::$temp_data[$key];
+}
+function the_cc_target() {
+	echo Content_Cards::$temp_data['target'] ? ' target="_blank"' : '';
 }

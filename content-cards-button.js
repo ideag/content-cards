@@ -10,9 +10,16 @@
                         type: 'textbox',
                         name: 'uri',
                         label: 'Link URI'
+                    },
+                    {
+                        type: 'checkbox',
+                        name: 'target',
+                        label: 'Target',
+                        text: 'Open in a new tab',
+                        checked:false
                     }],
                     onsubmit: function( e ) {
-                        editor.insertContent( '[contentcards url="' + e.data.uri + '"] ' );
+                        editor.insertContent( '[contentcards url="' + e.data.uri + '"' + ( e.data.target ? ' target="blank"' : '' )+'] ' );
                     }
                 } );
             }

@@ -1,5 +1,5 @@
 <div class="content_cards_card">
-	<a href="<?php echo esc_url( get_cc_data( 'url' ) ); ?>" target="_blank">
+	<a href="<?php echo esc_url( get_cc_data( 'url' ) ); ?>"<?php the_cc_target(); ?>>
 <?php if ( get_cc_data( 'image' ) ) : ?>
 		<img src="<?php echo esc_url( get_cc_data( 'image' ) ); ?>" alt="<?php echo esc_attr( get_cc_data( 'title' ) ); ?>"/>
 <?php endif; ?>
