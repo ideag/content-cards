@@ -12,12 +12,16 @@ add_action( 'plugins_loaded', array( 'Content_Cards', 'init' ) );
 class Content_Cards {
 	public static $options = array(
 		'patterns' => "wptavern.com\r\nwordpress.org",
-		'theme' => 'default',
+		'skin' => 'default',
 	);
 	private static $stylesheet = '';
 	public static function init() {
 		$options = get_option( 'content-cards_options' );
 		self::$options = wp_parse_args( $options, self::$options );
+		if ( isset( self::$options['theme'] ) ) {
+			self::$options['skin'] = self::$options['theme'];
+			unset( self::$options['theme'] );
+		}
 		self::$stylesheet = self::get_stylesheet();
 		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
@@ -72,13 +76,13 @@ class Content_Cards {
 		return $template;
 	}
 	private static function get_template( $url, $type = 'website' ) {
-		$template = self::_get_file( $url, 'php', $type, self::$options['theme'] );
+		$template = self::_get_file( $url, 'php', $type, self::$options['skin'] );
 		$template = apply_filters( 'content_cards_template', $template, $url );
 		$template = file_get_contents( $template );
 		return $template;
 	}
 	private static function get_stylesheet( ) {
-		$template = self::_get_file( false, 'css', '', self::$options['theme'], 'uri'  );
+		$template = self::_get_file( false, 'css', '', self::$options['skin'], 'uri'  );
 		$template = apply_filters( 'content_cards_stylesheet', $template );
 		return $template;
 	}
@@ -103,8 +107,8 @@ class Content_Cards {
 						),
 						'callback' => 'textarea',
 					),
-					'theme' => array(
-						'title'=>__('Snippet theme','content-cards'),
+					'skin' => array(
+						'title'=>__('Snippet Skin','content-cards'),
 						'args' => array (
 							'values' => array('default','fancy'),
 							'description' => __( 'Can be overwritten by theme.', 'content-cards' ),
