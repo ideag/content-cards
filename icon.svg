@@ -14,7 +14,10 @@
    id="svg3152"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="icon.svg">
+   sodipodi:docname="icon.svg"
+   inkscape:export-filename="/var/www/plugins_assets/opengraph-oembed/icon-128x128.png"
+   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="45">
   <defs
      id="defs3154" />
   <sodipodi:namedview
@@ -43,7 +46,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
