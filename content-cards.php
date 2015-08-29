@@ -20,6 +20,7 @@ class Content_Cards {
 		'patterns' => "wptavern.com\r\nwordpress.org",
 		'skin' => 'default',
 		'target' => false,
+		'update_interval' => MINUTE_IN_SECONDS,
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
@@ -35,6 +36,8 @@ class Content_Cards {
 		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
 		add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
+		add_action( 'content_cards_update', array( 'Content_Cards', 'update_data' ), 10, 3 );
+
 		add_shortcode( 'contentcard', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'opengraph', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'contentcards', 		array( 'Content_Cards', 'shortcode' ) );
@@ -330,15 +333,40 @@ class Content_Cards {
 		if ( !$post_id ) {
 			$post_id = get_the_id();
 		}
-		$result = get_post_meta( $post_id, 'content_cards_'.md5( $url ), true );
+		$url_md5 = md5( $url );
+		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
 		if ( !$result ) {
 			$result = self::get_remote_data( $url );
 			if ( $result ) {
-				$result->url = $url;
-				$meta_id = update_post_meta( $post_id, 'content_cards_'.md5( $url ), $result );
+				$result['url'] = $url;
+				$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
 			}				
 		}
+		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
+			$args = array(
+				$post_id,
+				$url,
+				$url_md5,
+			);
+			var_dump($args);
+			if ( false === wp_next_scheduled( 'content_cards_update', $args ) ) {
+				wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'content_cards_update', $args );
+			}
+		}
 		return $result;
+	}
+	public static function update_data( $post_id, $url, $url_md5 ) {
+		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
+		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
+			$new_result = self::get_remote_data( $url );
+			if ( $new_result ) {
+				$new_result['url'] = $url;
+				$result = $new_result;
+			} else {
+				$result['cc_last_updated'] = time();
+			}				
+			$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
+		}		
 	}
 
 	/**
@@ -351,14 +379,17 @@ class Content_Cards {
 	private static function get_remote_data( $url ) {
 		require_once( 'includes/opengraph.php' );
 		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
+		$result = array();
 		if ( $data ) {
 			$graph = OpenGraph::parse( $data );
-			$result = array();
 			if ( sizeof( $graph ) > 0 ) {
 				foreach ($graph as $key => $value) {
 				    $result[$key] = $value;
 				}				
 			}
+		}
+		if ( $result ) {
+			$result['cc_last_updated'] = time();
 		}
 		return $result;
 	} 
