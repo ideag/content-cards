@@ -58,15 +58,15 @@ class Content_Cards {
 		$theme_uri = 'dir' === $method ? $theme_dir : ( get_template_directory_uri() . '/' );
 		$child_theme_dir = get_stylesheet_directory() . '/';
 		$child_theme_uri = 'dir' === $method ? $child_theme_dir : ( get_stylesheet_directory_uri() . '/' );
-		$template =  "{$plugin_uri}templates/{$theme}/content-cards.{$extension}";
+		$template =  "{$plugin_uri}skins/{$theme}/content-cards.{$extension}";
 		if ( file_exists( "{$theme_dir}content-cards.{$extension}" ) ) {
 			$template = "{$theme_uri}content-cards.{$extension}";
 		}
 		if ( file_exists( "{$child_theme_dir}content-cards.{$extension}" ) ) {
 			$template = "{$child_theme_uri}content-cards.{$extension}";
 		}
-		if ( file_exists( "{$plugin_dir}templates/{$theme}/content-cards-{$type}.{$extension}" ) ) {
-			$template = "{$plugin_uri}templates/{$theme}/content-cards-{$type}.{$extension}";
+		if ( file_exists( "{$plugin_dir}skins/{$theme}/content-cards-{$type}.{$extension}" ) ) {
+			$template = "{$plugin_uri}skins/{$theme}/content-cards-{$type}.{$extension}";
 		}
 		if ( file_exists( "{$theme_dir}content-cards-{$type}.{$extension}" ) ) {
 			$template = "{$theme_uri}content-cards-{$type}.{$extension}";
