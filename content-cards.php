@@ -355,6 +355,7 @@ class Content_Cards {
  */
 function get_cc_data( $key ) {
 	return Content_Cards::$temp_data[$key];
+	return isset(Content_Cards::$temp_data[$key]) ? Content_Cards::$temp_data[$key] : '';
 }
 
 /**
@@ -363,7 +364,7 @@ function get_cc_data( $key ) {
  * @param $key
  */
 function the_cc_data( $key ) {
-	echo Content_Cards::$temp_data[$key];
+	echo get_cc_data( $key );
 }
 
 /**
