@@ -354,7 +354,6 @@ class Content_Cards {
  * @return mixed
  */
 function get_cc_data( $key ) {
-	return Content_Cards::$temp_data[$key];
 	return isset(Content_Cards::$temp_data[$key]) ? Content_Cards::$temp_data[$key] : '';
 }
 
