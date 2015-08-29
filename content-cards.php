@@ -320,31 +320,48 @@ class Content_Cards {
 
 	/**
 	 * Retrieves the OpenGraph info
+	 * from postmeta storage
+	 *
+	 * @param $url
+	 * @param $post_id
+	 * @return array|mixed
+	 */
+	private static function get_data( $url, $post_id = false ) {
+		if ( !$post_id ) {
+			$post_id = get_the_id();
+		}
+		$result = get_post_meta( $post_id, 'content_cards_'.md5( $url ), true );
+		if ( !$result ) {
+			$result = self::get_remote_data( $url );
+			if ( $result ) {
+				$result->url = $url;
+				$meta_id = update_post_meta( $post_id, 'content_cards_'.md5( $url ), $result );
+			}				
+		}
+		return $result;
+	}
+
+	/**
+	 * Retrieves the OpenGraph info
 	 * from remote site
 	 *
 	 * @param $url
 	 * @return array|mixed
 	 */
-	private static function get_data( $url ) {
-		$result = get_transient( 'og_oembed_'.md5( $url ) );
-		if ( !$result ) {
-			require_once( 'includes/opengraph.php' );
-			$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
-			if ( $data ) {
-				$graph = OpenGraph::parse( $data );
-				$result = array();
-				if ( sizeof( $graph ) > 0 ) {
-					foreach ($graph as $key => $value) {
-					    $result[$key] = $value;
-					}				
-				}
-				if ( $result ) {
-					set_transient( 'og_oembed_'.md5( $url ), $result, DAY_IN_SECONDS );
+	private static function get_remote_data( $url ) {
+		require_once( 'includes/opengraph.php' );
+		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
+		if ( $data ) {
+			$graph = OpenGraph::parse( $data );
+			$result = array();
+			if ( sizeof( $graph ) > 0 ) {
+				foreach ($graph as $key => $value) {
+				    $result[$key] = $value;
 				}				
 			}
 		}
 		return $result;
-	}
+	} 
 }
 
 /**
