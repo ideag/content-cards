@@ -1,13 +1,78 @@
 /*
 Skin Name: Default
 Version: 1.0.0
-Author: Arūnas Liuiza
+Author: khromov
 */
+
+.content_cards_card {
+	background-color: white;
+	border: 1px solid;
+	border-color: #e9eaed #dadada #ccc;
+	padding: 3px;
+
+	margin-bottom: 20px;
+}
+
+.content_cards_card .content_cards_image {
+	width: 100%;
+	display: block;
+	text-align: center;
+}
+
+.content_cards_card .content_cards_image img {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.content_cards_card .content_cards_center_image > a {
+	border: 0;
+}
+
+.content_cards_card .content_cards_title {
+	font-size: 22px;
+	line-height: 1.5;
+	color: #141412;
+
+	font-weight: bold;
+	margin: 10px 15px 7px 15px;
+}
+
+.content_cards_card .content_cards_description {
+	font-size: 100%;
+	line-height: 1.5;
+	color: #141412;
+
+	margin: 7px 15px 10px 15px;
+}
+
+.content_cards_card .content_cards_site_name {
+	font-style: italic;
+	font-size: 12px;
+	line-height: 1.5;
+
+	text-transform: uppercase;
+	color: #9197a3;
+	text-align: right;
+	margin: 10px 15px;
+}
+
+.content_cards_card .content_cards_description > p {
+	margin: 0;
+	padding: 0;
+}
+
+/*
 .content_cards_card {
 	border: 1px solid #999;
-	background-color: #eee;
+	background-color: #333;
+	color: #fff;
 	padding: 10px;
 	margin-bottom: 20px;
+}
+
+.content_cards_card * {
+	color:#fff;
 }
 
 .content_cards_card img {
@@ -40,3 +105,4 @@ Author: Arūnas Liuiza
 	color: #999;
 	margin-bottom: 0px;
 }
+*/
