@@ -9,6 +9,12 @@ License: GPL2
 */
 
 add_action( 'plugins_loaded', array( 'Content_Cards', 'init' ) );
+
+/**
+ * Main plugin class
+ *
+ * Class Content_Cards
+ */
 class Content_Cards {
 	public static $options = array(
 		'patterns' => "wptavern.com\r\nwordpress.org",
@@ -17,6 +23,7 @@ class Content_Cards {
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
+
 	public static function init() {
 		$options = get_option( 'content-cards_options' );
 		self::$options = wp_parse_args( $options, self::$options );
@@ -43,14 +50,40 @@ class Content_Cards {
 	    add_filter( "mce_external_plugins", array( 'Content_Cards', 'editor_button_js' ) );
 	    add_filter( 'mce_buttons', 			array( 'Content_Cards', 'editor_button' ) );
 	}
+
+	/**
+	 * Enqueues TinyMCE button JS
+	 *
+	 * @param $plugin_array
+	 * @return mixed
+	 */
 	public static function editor_button_js( $plugin_array ) {
     	$plugin_array['contentcards'] = plugins_url( 'content-cards-button.js', __FILE__ );
 	    return $plugin_array;
 	}
+
+	/**
+	 * Adds the CC button to TinyMCE
+	 *
+	 * @param $buttons
+	 * @return mixed
+	 */
 	public static function editor_button( $buttons ) {
 	    array_push( $buttons, 'contentcards_shortcode' );
 	    return $buttons;
 	}
+
+	/**
+	 * Generic template helper that allows overriding via
+	 * theme.
+	 *
+	 * @param $url
+	 * @param string $extension
+	 * @param string $type
+	 * @param string $theme
+	 * @param string $method
+	 * @return mixed|string|void
+	 */
 	private static function _get_file( $url, $extension='php', $type = 'website', $theme ="default", $method='dir' ) {
 		$plugin_dir = plugin_dir_path( __FILE__ );
 		$plugin_uri = 'dir' === $method ? $plugin_dir : plugins_url( '/', __FILE__ );
@@ -77,21 +110,43 @@ class Content_Cards {
 		$template = apply_filters( 'content_cards_file', $template, $url, $extension );
 		return $template;
 	}
+
+	/**
+	 * Gets the template for the Content Card
+	 *
+	 * @param $url
+	 * @param string $type
+	 * @return mixed|string|void
+	 */
 	private static function get_template( $url, $type = 'website' ) {
 		$template = self::_get_file( $url, 'php', $type, self::$options['skin'] );
 		$template = apply_filters( 'content_cards_template', $template, $url );
 		return $template;
 	}
+
+	/**
+	 * Gets the stylesheet for the Content Card
+	 *
+	 * @return mixed|string|void
+	 */
 	private static function get_stylesheet( ) {
 		$template = self::_get_file( false, 'css', '', self::$options['skin'], 'uri'  );
 		$template = apply_filters( 'content_cards_stylesheet', $template );
 		return $template;
 	}
+
+	/**
+	 * Adds admin stylesheet
+	 */
 	public static function admin_init() {
 		if ( self::$stylesheet ) {
 			add_editor_style( self::$stylesheet );		
 		}
 	}
+
+	/**
+	 * Creates admin menu
+	 */
 	public static function admin_menu() {
 		require_once ( 'includes/options.php' );
 		$fields =   array(
@@ -137,6 +192,12 @@ class Content_Cards {
 			'content-cards-settings'
 		);		
 	}
+
+	/**
+	 * Builds a list of skins from the skins/ folder.
+	 *
+	 * @return array
+	 */
 	private static function get_skins() {
 		$dir = plugin_dir_path( __FILE__ );
 		$dir .= 'skins/*';
@@ -159,6 +220,13 @@ class Content_Cards {
 		}
 		return $skins;
 	}
+
+	/**
+	 * Parses skin info data
+	 *
+	 * @param $dir
+	 * @return array|bool
+	 */
 	private static function get_skin_data( $dir ) {
 		$stylesheet = $dir."/content-cards.css";
 		if ( !file_exists( $stylesheet ) ) {
@@ -172,16 +240,39 @@ class Content_Cards {
 		$skin_data = get_file_data( $stylesheet, $default, 'cc_skin' );
 		return $skin_data;
 	}
+
+	/**
+	 * Enqueues frontend styles
+	 */
 	public static function styles() {
 		if ( self::$stylesheet ) {
 			wp_register_style( 'content-cards', self::$stylesheet );
 			wp_enqueue_style( 'content-cards' );
 		}
 	}
+
+	/**
+	 * oEmbed handler for domains in
+	 * "oEmbed White List"
+	 *
+	 * @param $matches
+	 * @param $attr
+	 * @param $url
+	 * @param $rawattr
+	 * @return mixed|void
+	 */
 	public static function oembed( $matches, $attr, $url, $rawattr ) {
 		$embed = self::build( $url );
 		return apply_filters( 'embed_content_cards', $embed, $matches, $attr, $url, $rawattr );
 	}
+
+	/**
+	 * Registers shortcode
+	 *
+	 * @param $args
+	 * @param string $content
+	 * @return string
+	 */
 	public static function shortcode( $args, $content = '') {
 		$result = '';
 		if ( !isset( $args['url'] ) ) {
@@ -195,6 +286,15 @@ class Content_Cards {
 		$result = self::build( $args['url'], $target );
 		return $result;
 	}
+
+	/**
+	 * Builds the data and output
+	 * for displaying the Content Card
+	 *
+	 * @param $url
+	 * @param null $target
+	 * @return string
+	 */
 	public static function build( $url, $target = null ) {
 		if ( null === $target ) {
 			$target = self::$options['target'];
@@ -217,6 +317,14 @@ class Content_Cards {
 		ob_end_clean();
 		return $result;
 	}
+
+	/**
+	 * Retrieves the OpenGraph info
+	 * from remote site
+	 *
+	 * @param $url
+	 * @return array|mixed
+	 */
 	private static function get_data( $url ) {
 		$result = get_transient( 'og_oembed_'.md5( $url ) );
 		if ( !$result ) {
@@ -237,14 +345,31 @@ class Content_Cards {
 		}
 		return $result;
 	}
-} 
+}
 
+/**
+ * Returns Content Card data, template function.
+ *
+ * @param $key
+ * @return mixed
+ */
 function get_cc_data( $key ) {
 	return Content_Cards::$temp_data[$key];
 }
+
+/**
+ * Prints Content Card data, template function.
+ *
+ * @param $key
+ */
 function the_cc_data( $key ) {
 	echo Content_Cards::$temp_data[$key];
 }
+
+/**
+ * Generates the target="" portion of the Content Card link based
+ * on user settings.
+ */
 function the_cc_target() {
 	echo Content_Cards::$temp_data['target'] ? ' target="_blank"' : '';
 }
