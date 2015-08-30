@@ -4,10 +4,14 @@ Version: 1.0.0
 Author: khromov
 */
 
+.content_cards_card * {
+	box-sizing: border-box;
+}
+
 .content_cards_card {
-	background-color: white;
+	background-color: #272822;
 	border: 1px solid;
-	border-color: #e9eaed #dadada #ccc;
+	border-color: #545454 #4a4a4a #3f3f3f;
 	padding: 3px;
 
 	margin-bottom: 20px;
@@ -25,6 +29,22 @@ Author: khromov
 	margin-right: auto;
 }
 
+/* Making this a bit more specific to make it harder for themes to override it */
+html body .content_cards_card a,
+html body .content_cards_card a:visited,
+html body .content_cards_card a:active {
+	box-shadow: none;
+	color: #F8F8F2;
+	text-decoration: none;
+}
+
+html body .content_cards_card a:hover,
+html body .content_cards_card a:active {
+	box-shadow: none;
+	color: #e1e1db;
+	text-decoration: none;
+}
+
 .content_cards_card .content_cards_center_image > a {
 	border: 0;
 }
@@ -32,7 +52,7 @@ Author: khromov
 .content_cards_card .content_cards_title {
 	font-size: 22px;
 	line-height: 1.5;
-	color: #141412;
+	color: #F8F8F2;
 
 	font-weight: bold;
 	margin: 10px 15px 7px 15px;
@@ -41,7 +61,7 @@ Author: khromov
 .content_cards_card .content_cards_description {
 	font-size: 100%;
 	line-height: 1.5;
-	color: #141412;
+	color: #F8F8F2;
 
 	margin: 7px 15px 10px 15px;
 }
@@ -52,7 +72,7 @@ Author: khromov
 	line-height: 1.5;
 
 	text-transform: uppercase;
-	color: #9197a3;
+	color: #FD971F;
 	text-align: right;
 	margin: 10px 15px;
 }
