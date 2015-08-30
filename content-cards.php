@@ -362,7 +362,6 @@ class Content_Cards {
 				$url,
 				$url_md5,
 			);
-			var_dump($args);
 			if ( false === wp_next_scheduled( 'content_cards_update', $args ) ) {
 				wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'content_cards_update', $args );
 			}
@@ -381,6 +380,13 @@ class Content_Cards {
 	 * @return null
 	 */
 	public static function update_data( $post_id, $url, $url_md5 ) {
+		// remove link metadata if link is not in post_content anymore
+		$content = get_post_field('post_content', $post_id);
+		if ( false === strpos( $content, $url ) ) {
+			delete_post_meta( $post_id, 'content_cards_'.$url_md5 );
+			return false;
+		}
+		// update link metadata from remote source
 		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
 		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
 			$new_result = self::get_remote_data( $url );
