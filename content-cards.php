@@ -20,7 +20,7 @@ class Content_Cards {
 		'patterns' => "wptavern.com\r\nwordpress.org",
 		'skin' => 'default',
 		'target' => false,
-		'update_interval' => MINUTE_IN_SECONDS,
+		'update_interval' => DAY_IN_SECONDS,
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
@@ -180,6 +180,20 @@ class Content_Cards {
 							'label'			=> __('Open links in new tab?','content-cards'),
 						),
 						'callback' => 'checkbox',
+					),
+					'update_interval' => array(
+						'title'=>__('Update Interval','content-cards'),
+						'args' => array (
+							'values' => array(
+								HOUR_IN_SECONDS     => __( 'Hourly', 'content-cards' ),
+								2 * HOUR_IN_SECONDS => __( 'Every 2 Hours', 'content-cards' ),
+								6 * HOUR_IN_SECONDS => __( 'Every 6 Hours', 'content-cards' ),
+								DAY_IN_SECONDS / 2  => __( 'Twice Daily', 'content-cards' ),
+								DAY_IN_SECONDS      => __( 'Daily', 'content-cards' ),
+							),
+							'description' => __( 'How often should Content Cards check for changes in OpenGraph data?', 'content-cards' ),
+						),
+						'callback' => 'select',
 					),
 				),
 			),
@@ -355,6 +369,17 @@ class Content_Cards {
 		}
 		return $result;
 	}
+
+	/**
+	 * Updates OpenGraph info
+	 * from remote site
+	 * via wp_cron task
+	 *
+	 * @param $post_id
+	 * @param $url
+	 * @param $url_md5	 
+	 * @return null
+	 */
 	public static function update_data( $post_id, $url, $url_md5 ) {
 		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
 		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
