@@ -218,6 +218,10 @@ class Content_Cards {
 			// }
 			$skins[$key] = $name;
 		}
+
+		//Sort skins in alphabetical order
+		asort($skins);
+
 		return $skins;
 	}
 
