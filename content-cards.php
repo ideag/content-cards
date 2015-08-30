@@ -9,7 +9,7 @@ License: GPL2
 */
 
 add_action( 'plugins_loaded', array( 'Content_Cards', 'init' ) );
-
+register_uninstall_hook( __FILE__, array( 'Content_Cards', 'uninstall' ) );
 /**
  * Main plugin class
  *
@@ -54,6 +54,12 @@ class Content_Cards {
 	    add_filter( 'mce_buttons', 			array( 'Content_Cards', 'editor_button' ) );
 	}
 
+	public static function uninstall() {
+		global $wpdb;
+		$q = "DELETE FROM `{$wpdb->postmeta}` WHERE `meta_key` LIKE 'content_cards_%'";
+		$wpdb->query( $q );
+		delete_option( 'content-cards_options' );
+	}
 	/**
 	 * Enqueues TinyMCE button JS
 	 *
