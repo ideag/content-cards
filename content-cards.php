@@ -336,7 +336,7 @@ class Content_Cards {
 		if ( !$data ) {
 			return $result;
 		}
-		$data['description'] = wpautop($data['description']);
+		$data['description'] = wpautop(isset($data['description'])?$data['description']:'');
 		$data['url'] = $url;
 		$data['target'] = $target;
 		$type = isset( $data['type'] ) ? $data['type'] : 'website';
