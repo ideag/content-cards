@@ -9,7 +9,7 @@ License: GPL2
 */
 
 add_action( 'plugins_loaded', array( 'Content_Cards', 'init' ) );
-
+register_uninstall_hook( __FILE__, array( 'Content_Cards', 'uninstall' ) );
 /**
  * Main plugin class
  *
@@ -20,6 +20,7 @@ class Content_Cards {
 		'patterns' => "wptavern.com\r\nwordpress.org",
 		'skin' => 'default',
 		'target' => false,
+		'update_interval' => DAY_IN_SECONDS,
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
@@ -35,6 +36,8 @@ class Content_Cards {
 		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
 		add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
+		add_action( 'content_cards_update', array( 'Content_Cards', 'update_data' ), 10, 3 );
+
 		add_shortcode( 'contentcard', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'opengraph', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'contentcards', 		array( 'Content_Cards', 'shortcode' ) );
@@ -51,6 +54,12 @@ class Content_Cards {
 	    add_filter( 'mce_buttons', 			array( 'Content_Cards', 'editor_button' ) );
 	}
 
+	public static function uninstall() {
+		global $wpdb;
+		$q = "DELETE FROM `{$wpdb->postmeta}` WHERE `meta_key` LIKE 'content_cards_%'";
+		$wpdb->query( $q );
+		delete_option( 'content-cards_options' );
+	}
 	/**
 	 * Enqueues TinyMCE button JS
 	 *
@@ -177,6 +186,20 @@ class Content_Cards {
 							'label'			=> __('Open links in new tab?','content-cards'),
 						),
 						'callback' => 'checkbox',
+					),
+					'update_interval' => array(
+						'title'=>__('Update Interval','content-cards'),
+						'args' => array (
+							'values' => array(
+								HOUR_IN_SECONDS     => __( 'Hourly', 'content-cards' ),
+								2 * HOUR_IN_SECONDS => __( 'Every 2 Hours', 'content-cards' ),
+								6 * HOUR_IN_SECONDS => __( 'Every 6 Hours', 'content-cards' ),
+								DAY_IN_SECONDS / 2  => __( 'Twice Daily', 'content-cards' ),
+								DAY_IN_SECONDS      => __( 'Daily', 'content-cards' ),
+							),
+							'description' => __( 'How often should Content Cards check for changes in OpenGraph data?', 'content-cards' ),
+						),
+						'callback' => 'select',
 					),
 				),
 			),
@@ -324,31 +347,93 @@ class Content_Cards {
 
 	/**
 	 * Retrieves the OpenGraph info
+	 * from postmeta storage
+	 *
+	 * @param $url
+	 * @param $post_id
+	 * @return array|mixed
+	 */
+	private static function get_data( $url, $post_id = false ) {
+		if ( !$post_id ) {
+			$post_id = get_the_id();
+		}
+		$url_md5 = md5( $url );
+		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
+		if ( !$result ) {
+			$result = self::get_remote_data( $url );
+			if ( $result ) {
+				$result['url'] = $url;
+				$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
+			}				
+		}
+		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
+			$args = array(
+				$post_id,
+				$url,
+				$url_md5,
+			);
+			if ( false === wp_next_scheduled( 'content_cards_update', $args ) ) {
+				wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'content_cards_update', $args );
+			}
+		}
+		return $result;
+	}
+
+	/**
+	 * Updates OpenGraph info
+	 * from remote site
+	 * via wp_cron task
+	 *
+	 * @param $post_id
+	 * @param $url
+	 * @param $url_md5	 
+	 * @return null
+	 */
+	public static function update_data( $post_id, $url, $url_md5 ) {
+		// remove link metadata if link is not in post_content anymore
+		$content = get_post_field('post_content', $post_id);
+		if ( false === strpos( $content, $url ) ) {
+			delete_post_meta( $post_id, 'content_cards_'.$url_md5 );
+			return false;
+		}
+		// update link metadata from remote source
+		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
+		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
+			$new_result = self::get_remote_data( $url );
+			if ( $new_result ) {
+				$new_result['url'] = $url;
+				$result = $new_result;
+			} else {
+				$result['cc_last_updated'] = time();
+			}				
+			$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
+		}		
+	}
+
+	/**
+	 * Retrieves the OpenGraph info
 	 * from remote site
 	 *
 	 * @param $url
 	 * @return array|mixed
 	 */
-	private static function get_data( $url ) {
-		$result = get_transient( 'og_oembed_'.md5( $url ) );
-		if ( !$result ) {
-			require_once( 'includes/opengraph.php' );
-			$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
-			if ( $data ) {
-				$graph = OpenGraph::parse( $data );
-				$result = array();
-				if ( sizeof( $graph ) > 0 ) {
-					foreach ($graph as $key => $value) {
-					    $result[$key] = $value;
-					}				
-				}
-				if ( $result ) {
-					set_transient( 'og_oembed_'.md5( $url ), $result, DAY_IN_SECONDS );
+	private static function get_remote_data( $url ) {
+		require_once( 'includes/opengraph.php' );
+		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
+		$result = array();
+		if ( $data ) {
+			$graph = OpenGraph::parse( $data );
+			if ( sizeof( $graph ) > 0 ) {
+				foreach ($graph as $key => $value) {
+				    $result[$key] = $value;
 				}				
 			}
 		}
+		if ( $result ) {
+			$result['cc_last_updated'] = time();
+		}
 		return $result;
-	}
+	} 
 }
 
 /**
