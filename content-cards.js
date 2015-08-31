@@ -16,7 +16,7 @@
 			var self = this;
 
 			wp.ajax.post( this.action, {
-				post_ID: media.view.settings.post.id,
+				post_id: media.view.settings.post.id,
 				type: this.shortcode.tag,
 				shortcode: this.shortcode.string()
 			} )
