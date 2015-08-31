@@ -52,6 +52,11 @@ class Content_Cards {
 		}
 	    add_filter( "mce_external_plugins", array( 'Content_Cards', 'editor_button_js' ) );
 	    add_filter( 'mce_buttons', 			array( 'Content_Cards', 'editor_button' ) );
+
+	    // shortcode preview
+		add_action( 'admin_init', 						array( 'Content_Cards', 'init_preview' ), 20 );
+		add_action( 'wp_ajax_content_cards_shortcode', 	array( 'Content_Cards', 'ajax_shortcode' ), 20 );
+
 	}
 
 	public static function uninstall() {
@@ -434,6 +439,61 @@ class Content_Cards {
 		}
 		return $result;
 	} 
+
+    public static  function init_preview() {
+        add_action( 'print_media_templates', array( 'Content_Cards', 'print_media_templates' ) );
+        add_action( 'admin_enqueue_scripts', array( 'Content_Cards', 'scripts_preview' ), 100 );
+    }
+	public static function ajax_shortcode() {
+		// Don't sanitize shortcodes — can contain HTML kses doesn't allow (e.g. sourcecode shortcode)
+		if ( ! empty( $_POST['shortcode'] ) ) {
+			$shortcode = stripslashes( $_POST['shortcode'] );
+		} else {
+			$shortcode = null;
+		}
+		if ( isset( $_POST['post_id'] ) ) {
+			$post_id = intval( $_POST['post_id'] );
+		} else {
+			$post_id = null;
+		}
+		if ( ! empty( $post_id ) ) {
+			global $post;
+			$post = get_post( $post_id );
+			setup_postdata( $post );
+		}
+		ob_start();
+		echo do_shortcode( $shortcode );
+		wp_send_json_success( ob_get_clean() );
+	}
+
+    /**
+     * Outputs the view inside the wordpress editor.
+     */
+    public static function print_media_templates() {
+        if ( ! isset( get_current_screen()->id ) || get_current_screen()->base != 'post' )
+            return;
+        ?>
+        <script type="text/html" id="tmpl-editor-contentcards">
+			<div class="content_cards_preview">{{ data.content }}</div>
+		</script>
+        <?php
+    }
+
+
+    public static function scripts_preview() {
+        if ( ! isset( get_current_screen()->id ) || get_current_screen()->base != 'post' ) {
+            return;
+        }
+    	wp_enqueue_script( 'content-cards', plugins_url( 'content-cards.js', __FILE__ ), array('shortcode'), false, true );
+    	$data = array(
+    		'loading_image' => plugins_url( 'content-cards-loading.png', __FILE__ ),
+    		'texts' => array(
+    			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
+    			'link_dialog_title' => __( 'Edit Content Card', 'content-cards' ),
+    		)
+    	);
+    	wp_localize_script( 'content-cards', 'contentcards', $data );
+    }
 }
 
 /**
