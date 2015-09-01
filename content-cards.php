@@ -37,6 +37,7 @@ class Content_Cards {
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
 		add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
 		add_action( 'content_cards_update', array( 'Content_Cards', 'update_data' ), 10, 3 );
+		add_action( 'content_cards_retry',  array( 'Content_Cards', 'retry_data' ), 10, 4 );
 
 		add_shortcode( 'contentcard', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'opengraph', 		array( 'Content_Cards', 'shortcode' ) );
@@ -52,6 +53,11 @@ class Content_Cards {
 		}
 	    add_filter( "mce_external_plugins", array( 'Content_Cards', 'editor_button_js' ) );
 	    add_filter( 'mce_buttons', 			array( 'Content_Cards', 'editor_button' ) );
+
+	    // shortcode preview
+		add_action( 'admin_init', 						array( 'Content_Cards', 'init_preview' ), 20 );
+		add_action( 'wp_ajax_content_cards_shortcode', 	array( 'Content_Cards', 'ajax_shortcode' ), 20 );
+
 	}
 
 	public static function uninstall() {
@@ -310,7 +316,7 @@ class Content_Cards {
 		} else {
 			$target = null;
 		}
-		$result = self::build( $args['url'], $target );
+		$result = self::build( $args['url'], $target, !is_admin() );
 		return $result;
 	}
 
@@ -322,16 +328,21 @@ class Content_Cards {
 	 * @param null $target
 	 * @return string
 	 */
-	public static function build( $url, $target = null ) {
+	public static function build( $url, $target = null, $fallback = false ) {
 		if ( null === $target ) {
 			$target = self::$options['target'];
 		}
 		$data = self::get_data( $url );
-		$result = "";
 		if ( !$data ) {
+			$result = '';
+			if ( $fallback ) {
+				$target = $target ? ' target="_blank"' : "";
+				$domain = parse_url( $url, PHP_URL_HOST );
+				$result = wpautop( "<a href=\"{$url}\"{$target}>{$domain}</a>" );
+			}
 			return $result;
 		}
-		$data['description'] = wpautop($data['description']);
+		$data['description'] = wpautop(isset($data['description'])?$data['description']:'');
 		$data['url'] = $url;
 		$data['target'] = $target;
 		$type = isset( $data['type'] ) ? $data['type'] : 'website';
@@ -360,11 +371,16 @@ class Content_Cards {
 		$url_md5 = md5( $url );
 		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
 		if ( !$result ) {
-			$result = self::get_remote_data( $url );
-			if ( $result ) {
-				$result['url'] = $url;
-				$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
-			}				
+			$args = array( $post_id, $url, $url_md5, MINUTE_IN_SECONDS );
+			if ( false === wp_next_scheduled( 'content_cards_retry', $args ) ) {
+				$result = self::get_remote_data( $url );
+				if ( $result ) {
+					$result['url'] = $url;
+					$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
+				} else {
+					wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'content_cards_retry', $args );
+				}
+			}
 		}
 		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
 			$args = array(
@@ -411,6 +427,39 @@ class Content_Cards {
 	}
 
 	/**
+	 * Retries to get OpenGraph info
+	 * from remote site
+	 * via wp_cron task
+	 *
+	 * @param $post_id
+	 * @param $url
+	 * @param $url_md5	 
+	 * @return null
+	 */
+	public static function retry_data( $post_id, $url, $url_md5, $interval ) {
+		// remove link metadata if link is not in post_content anymore
+		$content = get_post_field('post_content', $post_id);
+		if ( false === strpos( $content, $url ) ) {
+			delete_post_meta( $post_id, 'content_cards_'.$url_md5 );
+			return false;
+		}
+		// update link metadata from remote source
+		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
+		if ( $result ) {
+			$new_result = self::get_remote_data( $url );
+			if ( $new_result ) {
+				$new_result['url'] = $url;
+				$result = $new_result;
+			}
+			$result['cc_last_updated'] = time();
+			$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
+		} else {
+			$args = array( $post_id, $url, $url_md5, $interval * 2 );
+			wp_schedule_single_event( time() + $interval, 'content_cards_retry', $args );
+		}
+	}
+
+	/**
 	 * Retrieves the OpenGraph info
 	 * from remote site
 	 *
@@ -434,6 +483,61 @@ class Content_Cards {
 		}
 		return $result;
 	} 
+
+    public static  function init_preview() {
+        add_action( 'print_media_templates', array( 'Content_Cards', 'print_media_templates' ) );
+        add_action( 'admin_enqueue_scripts', array( 'Content_Cards', 'scripts_preview' ), 100 );
+    }
+	public static function ajax_shortcode() {
+		// Don't sanitize shortcodes — can contain HTML kses doesn't allow (e.g. sourcecode shortcode)
+		if ( ! empty( $_POST['shortcode'] ) ) {
+			$shortcode = stripslashes( $_POST['shortcode'] );
+		} else {
+			$shortcode = null;
+		}
+		if ( isset( $_POST['post_id'] ) ) {
+			$post_id = intval( $_POST['post_id'] );
+		} else {
+			$post_id = null;
+		}
+		if ( ! empty( $post_id ) ) {
+			global $post;
+			$post = get_post( $post_id );
+			setup_postdata( $post );
+		}
+		ob_start();
+		echo do_shortcode( $shortcode );
+		wp_send_json_success( ob_get_clean() );
+	}
+
+    /**
+     * Outputs the view inside the wordpress editor.
+     */
+    public static function print_media_templates() {
+        if ( ! isset( get_current_screen()->id ) || get_current_screen()->base != 'post' )
+            return;
+        ?>
+        <script type="text/html" id="tmpl-editor-contentcards">
+			<div class="content_cards_preview">{{ data.content }}</div>
+		</script>
+        <?php
+    }
+
+
+    public static function scripts_preview() {
+        if ( ! isset( get_current_screen()->id ) || get_current_screen()->base != 'post' ) {
+            return;
+        }
+    	wp_enqueue_script( 'content-cards', plugins_url( 'content-cards.js', __FILE__ ), array('shortcode'), false, true );
+    	$data = array(
+    		'loading_image' => plugins_url( 'content-cards-loading.png', __FILE__ ),
+    		'texts' => array(
+    			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
+    			'link_dialog_title' => __( 'Edit Content Card', 'content-cards' ),
+    		)
+    	);
+    	wp_localize_script( 'content-cards', 'contentcards', $data );
+    }
 }
 
 /**
