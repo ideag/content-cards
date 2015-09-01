@@ -36,6 +36,7 @@ class Content_Cards {
 		}
 		self::$stylesheet = self::get_stylesheet();
 		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
+		add_action( 'admin_enqueue_scripts',array( 'Content_Cards', 'admin_scripts' ) );
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
 		add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
 		add_action( 'content_cards_update', array( 'Content_Cards', 'update_data' ), 10, 3 );
@@ -211,6 +212,15 @@ class Content_Cards {
 						),
 						'callback' => 'select',
 					),
+					'default_image' => array(
+						'title'=>__( 'Placeholder Image', 'content-cards' ),
+						'args' => array (
+							'button_text' 			=> __( 'Upload Image', 'content-cards' ),
+							'uploader_button_text' 	=> __( 'Select File', 'content-cards' ),
+							'description' 			=> __( 'Placeholder image for Content Cards.', 'content-cards' ),
+						),
+						'callback' => 'file',
+					),					
 				),
 			),
 		);
@@ -572,6 +582,15 @@ class Content_Cards {
     	);
     	wp_localize_script( 'content-cards', 'contentcards', $data );
     }
+
+	public static function admin_scripts() {
+    	wp_register_script( 'content-cards-upload', plugins_url( 'content-cards-upload.js', __FILE__ ) , array('jquery','media-upload','thickbox') );
+	    if ( 'settings_page_content-cards-settings' == get_current_screen() -> id ) {
+	        wp_enqueue_media();
+	        wp_enqueue_script( 'content-cards-upload' );
+	    }		
+	}	
+
 }
 
 /**

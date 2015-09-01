@@ -49,6 +49,15 @@ class Content_Cards_Options {
 
   // Callback functions
 
+  // FILE - Name: file
+  public static function file($args) {
+    if ( !isset($args['size']) ) $args['size']=40;
+    if ( !isset($args['button_text']) ) $args['button_text']= __( 'Upload' );
+    $description = isset( $args['description'] ) ? "<p class=\"description\">{$args['description']}</p>": '';
+    $file_button = "<input id=\"{$args['option_id']}_button\" type=\"button\" class=\"button upload_button\" value=\"{$args['button_text']}\" data-uploader_title=\"{$args['button_text']}\" data-uploader_button_text=\"{$args['uploader_button_text']}\" data-target=\"#{$args['option_id']}\"/>";
+    echo "<input id='{$args['option_id']}' name='".self::$id."[{$args['option_id']}]' size='{$args['size']}' type='text' value='".esc_attr( Content_Cards::$options[$args['option_id']] )."' />{$file_button}{$description}";
+  }   
+
   // DROP-DOWN-BOX - Name: select - Argument : values: array()
   public static function select($args) {
     $items = $args['values'];
