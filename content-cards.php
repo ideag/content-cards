@@ -545,10 +545,15 @@ class Content_Cards {
  * Returns Content Card data, template function.
  *
  * @param $key
+ * @param $sanitize
  * @return mixed
  */
-function get_cc_data( $key ) {
-	return isset(Content_Cards::$temp_data[$key]) ? Content_Cards::$temp_data[$key] : '';
+function get_cc_data( $key, $sanitize = false ) {
+	$result = isset(Content_Cards::$temp_data[$key]) ? Content_Cards::$temp_data[$key] : '';
+	if (is_callable($sanitize)) {
+		$result = call_user_func( $sanitize, $result );
+	}
+	return $result;
 }
 
 /**
@@ -556,8 +561,8 @@ function get_cc_data( $key ) {
  *
  * @param $key
  */
-function the_cc_data( $key ) {
-	echo get_cc_data( $key );
+function the_cc_data( $key, $sanitize = false ) {
+	echo get_cc_data( $key, $sanitize );
 }
 
 /**
