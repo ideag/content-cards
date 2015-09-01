@@ -534,7 +534,10 @@ class Content_Cards {
     		'loading_image' => plugins_url( 'content-cards-loading.png', __FILE__ ),
     		'texts' => array(
     			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
+    			'target_label' 		=> __( 'Target', 'content-cards' ),
+    			'target_text' 		=> __( 'Open Link in New Tab', 'content-cards' ),
     			'link_dialog_title' => __( 'Edit Content Card', 'content-cards' ),
+    			'add_dialog_title'  => __( 'Add Content Card', 'content-cards' ),
     		)
     	);
     	wp_localize_script( 'content-cards', 'contentcards', $data );
