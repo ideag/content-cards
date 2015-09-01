@@ -71,6 +71,8 @@ Content Cards provides three new template tags: `get_cc_data()`, `the_cc_data()`
 == Screenshots ==
 
 1. Examples of Content Cards in different default WordPress themes
+2. A dialog to insert Content Cards shortcode into post content
+3. Content Cards Settings page
 
 == Changelog ==
 
