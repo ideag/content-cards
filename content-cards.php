@@ -158,6 +158,9 @@ class Content_Cards {
 		if ( self::$stylesheet ) {
 			add_editor_style( self::$stylesheet );		
 		}
+
+		/* Stylesheet for loading indicator */
+		add_editor_style( plugins_url( 'skins/content-cards-editor.css', __FILE__ ) );
 	}
 
 	/**
@@ -531,10 +534,12 @@ class Content_Cards {
         }
     	wp_enqueue_script( 'content-cards', plugins_url( 'content-cards.js', __FILE__ ), array('shortcode'), false, true );
     	$data = array(
-    		'loading_image' => plugins_url( 'content-cards-loading.png', __FILE__ ),
+    		'loading_image' => plugins_url( 'content-cards-loading.gif', __FILE__ ),
     		'texts' => array(
     			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
     			'link_dialog_title' => __( 'Edit Content Card', 'content-cards' ),
+					'loading_image_heading' => __( 'This Content Card is still processing', 'content-cards' ),
+					'loading_image_text' => __( 'If this message persists, make sure the link you are trying to embed is reachable. While your content card hasn\'t been processed, visitors will see a normal link.' , 'content-cards' ),
     		)
     	);
     	wp_localize_script( 'content-cards', 'contentcards', $data );
@@ -545,10 +550,15 @@ class Content_Cards {
  * Returns Content Card data, template function.
  *
  * @param $key
+ * @param $sanitize
  * @return mixed
  */
-function get_cc_data( $key ) {
-	return isset(Content_Cards::$temp_data[$key]) ? Content_Cards::$temp_data[$key] : '';
+function get_cc_data( $key, $sanitize = false ) {
+	$result = isset(Content_Cards::$temp_data[$key]) ? Content_Cards::$temp_data[$key] : '';
+	if (is_callable($sanitize)) {
+		$result = call_user_func( $sanitize, $result );
+	}
+	return $result;
 }
 
 /**
@@ -556,8 +566,8 @@ function get_cc_data( $key ) {
  *
  * @param $key
  */
-function the_cc_data( $key ) {
-	echo get_cc_data( $key );
+function the_cc_data( $key, $sanitize = false ) {
+	echo get_cc_data( $key, $sanitize );
 }
 
 /**
