@@ -328,7 +328,12 @@ class Content_Cards {
 		if ( !isset( $args['url'] ) ) {
 			return $result;
 		}
-		if ( isset( $args['target'] ) &&  in_array( $args['target'], array( true, 'true', 'blank', '_blank' ) ) ) {
+
+		if ( isset( $args['target'] ) && $args['target'] === 'default' ) {
+			var_dump("here");
+			$target = true;
+		}
+		else if ( isset( $args['target'] ) &&  in_array( $args['target'], array( true, 'true', 'blank', '_blank' ) ) ) {
 			$target = true;
 		} else {
 			$target = null;
@@ -580,8 +585,11 @@ class Content_Cards {
     		'loading_image' => plugins_url( 'content-cards-loading.gif', __FILE__ ),
     		'texts' => array(
     			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
-    			'target_label' 		=> __( 'Target', 'content-cards' ),
-    			'target_text' 		=> __( 'Open Link in New Tab', 'content-cards' ),
+    			'target_label' 		=> __( 'Open Link in New Tab', 'content-cards' ),
+					'target_text_global' 		=> __( 'Global setting', 'content-cards' ),
+					'target_text_yes' 		=> __( 'Yes', 'content-cards' ),
+					'target_text_no' 		=> __( 'No', 'content-cards' ),
+					'target_text_default' 		=> __( 'Default', 'content-cards' ),
     			'link_dialog_title' => __( 'Edit Content Card', 'content-cards' ),
     			'add_dialog_title'  => __( 'Add Content Card', 'content-cards' ),
 				'loading_image_heading' => __( 'This Content Card is still processing', 'content-cards' ),

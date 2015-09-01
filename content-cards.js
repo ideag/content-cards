@@ -43,16 +43,31 @@
                         label: contentcards.texts.link_label,
 	                    value: values['url']
                     },
-                    {
-                        type: 'checkbox',
-                        name: 'target',
-                        label: contentcards.texts.target_label,
-                        text: contentcards.texts.target_text,
-	                    checked: values['target']?true:false
-                    },
+					{
+						type: 'listbox',
+						name: 'target',
+						label: contentcards.texts.target_label,
+						onselect: function(e) {
+						},
+						'values': [
+							{
+								text: contentcards.texts.target_text_global, value: 'default'
+							},
+							{
+								text: contentcards.texts.target_text_yes, value: '_blank'
+							},
+							{
+								text: contentcards.texts.target_text_no, value: '_self'
+							}
+						],
+						onPostRender: function() {
+							// Select the second item by default
+							this.value('default');
+						}
+					}
                 ],
                 onsubmit: function(e){
-                	var s = '[contentcards url="' + e.data.url + '"' + ( e.data.target ? ' target="_blank"' : '' )+']'
+                	var s = '[contentcards url="' + e.data.url + '"' + ( e.data.target  ? ' target="_blank"' : '' )+']'
 				    tinyMCE.activeEditor.insertContent( s );
                 }
             } );
