@@ -8,7 +8,7 @@
 		action: 'content_cards_shortcode',
         setLoader: function() {
 			this.setContent(
-				'<img src="'+contentcards.loading_image+'">'
+				'<div class="content-cards-loading-info"><div class="content-cards-loading-info-image"><img src="'+contentcards.loading_image+'"></div><h1>'+contentcards.texts.loading_image_heading+'</h1><p>'+contentcards.texts.loading_image_text+'</p></div>'
 		    );
         },
 		template: media.template( 'editor-contentcards' ),
