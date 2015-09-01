@@ -31,7 +31,7 @@ There are two ways of inserting Content Cards into WordPress posts - shortcode a
 
 = Shortcode =
 
-Shortcode is the simplest way - You just put `[contentcards url="http://yourdomain.com/article/1"] into Your post content and it gets replaced with a content card. 
+Shortcode is the simplest way - You just put `[contentcards url="http://yourdomain.com/article/1"]` into Your post content and it gets replaced with a content card. 
 The shortcode accepts two attributes:
 
 * `url` (requried) - link to the site you want to display Content Card for.
