@@ -173,11 +173,10 @@ class Content_Cards {
 	public static function admin_init() {
 		if ( self::$stylesheet ) {
 			add_editor_style( self::$stylesheet );		
-			add_editor_style( plugins_url( 'content-cards-editor.css', __FILE__ ) );
 		}
-
+		
 		/* Stylesheet for loading indicator */
-		add_editor_style( plugins_url( 'skins/content-cards-editor.css', __FILE__ ) );
+		add_editor_style( plugins_url( 'content-cards-editor.css', __FILE__ ) );
 	}
 
 	/**
