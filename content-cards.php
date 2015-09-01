@@ -21,11 +21,13 @@ class Content_Cards {
 		'skin' => 'default',
 		'target' => false,
 		'update_interval' => DAY_IN_SECONDS,
+		'default_image' => '',
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
 
 	public static function init() {
+		self::$options['default_image'] = plugins_url( 'content-cards-placeholder.png', __FILE__ );
 		$options = get_option( 'content-cards_options' );
 		self::$options = wp_parse_args( $options, self::$options );
 		if ( isset( self::$options['theme'] ) ) {
@@ -157,6 +159,7 @@ class Content_Cards {
 	public static function admin_init() {
 		if ( self::$stylesheet ) {
 			add_editor_style( self::$stylesheet );		
+			add_editor_style( plugins_url( 'content-cards-editor.css', __FILE__ ) );
 		}
 	}
 
@@ -483,6 +486,12 @@ class Content_Cards {
 			$result = self::get_remote_data_fallback( $data );
 		}
 		if ( $result ) {
+			if ( !isset( $result['image'] ) ) {
+				$result['image'] = self::$options['default_image'];
+			}
+			if ( !isset( $result['site_name'] ) ) {
+				$result['site_name'] = parse_url( $url, PHP_URL_HOST );
+			}
 			$result['cc_last_updated'] = time();
 		}
 		return $result;
