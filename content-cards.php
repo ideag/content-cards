@@ -486,6 +486,7 @@ class Content_Cards {
 	private static function get_remote_data( $url ) {
 		require_once( 'includes/opengraph.php' );
 		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
+		$data = mb_convert_encoding($data, 'HTML-ENTITIES', 'UTF-8');
 		$result = array();
 		if ( $data ) {
 			$graph = OpenGraph::parse( $data );
