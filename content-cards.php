@@ -27,9 +27,21 @@ class Content_Cards {
 	public static $temp_data = array();
 
 	public static function init() {
-		self::$options['default_image'] = plugins_url( 'content-cards-placeholder.png', __FILE__ );
 		$options = get_option( 'content-cards_options' );
+
 		self::$options = wp_parse_args( $options, self::$options );
+
+		//No placeholder image set, let's try to decide on one based on light or dark color scheme. Also let us filter this
+		//value, for example for people wanting to set a dark placeholder for a theme without overriding it.
+		if( self::$options['default_image'] === '' ) {
+			if( self::$options['skin'] === 'default-dark' || apply_filters('content_cards_dark_placeholder', false) ) {
+				self::$options['default_image'] = plugins_url( 'content-cards-placeholder-dark.png', __FILE__ );
+			}
+			else {
+				self::$options['default_image'] = plugins_url( 'content-cards-placeholder-light.png', __FILE__ );
+			}
+		}
+
 		if ( isset( self::$options['theme'] ) ) {
 			self::$options['skin'] = self::$options['theme'];
 			unset( self::$options['theme'] );
