@@ -479,11 +479,35 @@ class Content_Cards {
 				}				
 			}
 		}
+		if ( $data && !$result ) {
+			$result = self::get_remote_data_fallback( $data );
+		}
 		if ( $result ) {
 			$result['cc_last_updated'] = time();
 		}
 		return $result;
 	} 
+
+	private static function get_remote_data_fallback( $data ) {
+		$result = array();
+
+		$doc = new DOMDocument;
+		$doc->loadHTML( $data );
+
+		$title = $doc->getElementsByTagName( 'title' );
+		$title = $title[0];
+
+		$xpath = new DOMXPath($doc);
+		$description = $xpath->query('//meta[@name="description"]/@content');
+
+		if ( $title && $description ) {
+			$result = array(
+				'title' => $title,
+				'description' => $description
+			);
+		}
+		return $result;
+	}
 
     public static  function init_preview() {
         add_action( 'print_media_templates', array( 'Content_Cards', 'print_media_templates' ) );
