@@ -2,8 +2,8 @@
 /*
 Plugin Name: Content Cards
 Description: Pull OpenGraph data from other websites and show them as "Cards"
-Version: 0.2.0
-Author: Arūnas Liuiza, khromov
+Version: 0.9.0
+Author: Arūnas Liuiza
 Author URI: http://arunas.co
 License: GPL2
 */
