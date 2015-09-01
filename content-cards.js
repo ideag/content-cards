@@ -43,15 +43,16 @@
                         label: contentcards.texts.link_label,
 	                    value: values['url']
                     },
+                    {
+                        type: 'checkbox',
+                        name: 'target',
+                        label: contentcards.texts.target_label,
+                        text: contentcards.texts.target_text,
+	                    checked: values['target']?true:false
+                    },
                 ],
                 onsubmit: function(e){
-                	var s = '[contentcards';
-				    for(var i in e.data){
-					    if(e.data.hasOwnProperty(i) && i != 'innercontent'){
-						    s += ' ' + i + '="' + e.data[i] + '"';
-					    }
-				    }
-				    s += ']';
+                	var s = '[contentcards url="' + e.data.url + '"' + ( e.data.target ? ' target="_blank"' : '' )+']'
 				    tinyMCE.activeEditor.insertContent( s );
                 }
             } );

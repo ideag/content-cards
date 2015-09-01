@@ -5,21 +5,21 @@
             icon: false,
             onclick: function() {
                 editor.windowManager.open( {
-                    title: 'Add Content Card',
+                    title: contentcards.texts.add_dialog_title,
                     body: [{
                         type: 'textbox',
                         name: 'uri',
-                        label: 'Link URI'
+                        label: 'contentcards.texts.link_label,'
                     },
                     {
                         type: 'checkbox',
                         name: 'target',
-                        label: 'Target',
-                        text: 'Open in a new tab',
+                        label: contentcards.texts.target_label,
+                        text: contentcards.texts.target_text,
                         checked:false
                     }],
                     onsubmit: function( e ) {
-                        editor.insertContent( '[contentcards url="' + e.data.uri + '"' + ( e.data.target ? ' target="blank"' : '' )+'] ' );
+                        editor.insertContent( '[contentcards url="' + e.data.uri + '"' + ( e.data.target ? ' target="_blank"' : '' )+'] ' );
                     }
                 } );
             }

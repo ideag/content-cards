@@ -537,9 +537,12 @@ class Content_Cards {
     		'loading_image' => plugins_url( 'content-cards-loading.gif', __FILE__ ),
     		'texts' => array(
     			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
+    			'target_label' 		=> __( 'Target', 'content-cards' ),
+    			'target_text' 		=> __( 'Open Link in New Tab', 'content-cards' ),
     			'link_dialog_title' => __( 'Edit Content Card', 'content-cards' ),
-					'loading_image_heading' => __( 'This Content Card is still processing', 'content-cards' ),
-					'loading_image_text' => __( 'If this message persists, make sure the link you are trying to embed is reachable. While your content card hasn\'t been processed, visitors will see a normal link.' , 'content-cards' ),
+    			'add_dialog_title'  => __( 'Add Content Card', 'content-cards' ),
+				'loading_image_heading' => __( 'This Content Card is still processing', 'content-cards' ),
+				'loading_image_text' => __( 'If this message persists, make sure the link you are trying to embed is reachable. While your content card hasn\'t been processed, visitors will see a normal link.' , 'content-cards' ),
     		)
     	);
     	wp_localize_script( 'content-cards', 'contentcards', $data );
