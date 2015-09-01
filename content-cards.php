@@ -21,11 +21,13 @@ class Content_Cards {
 		'skin' => 'default',
 		'target' => false,
 		'update_interval' => DAY_IN_SECONDS,
+		'default_image' => '',
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
 
 	public static function init() {
+		self::$options['default_image'] = plugins_url( 'content-cards-placeholder.png', __FILE__ );
 		$options = get_option( 'content-cards_options' );
 		self::$options = wp_parse_args( $options, self::$options );
 		if ( isset( self::$options['theme'] ) ) {
@@ -34,6 +36,7 @@ class Content_Cards {
 		}
 		self::$stylesheet = self::get_stylesheet();
 		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
+		add_action( 'admin_enqueue_scripts',array( 'Content_Cards', 'admin_scripts' ) );
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
 		add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
 		add_action( 'content_cards_update', array( 'Content_Cards', 'update_data' ), 10, 3 );
@@ -157,6 +160,7 @@ class Content_Cards {
 	public static function admin_init() {
 		if ( self::$stylesheet ) {
 			add_editor_style( self::$stylesheet );		
+			add_editor_style( plugins_url( 'content-cards-editor.css', __FILE__ ) );
 		}
 
 		/* Stylesheet for loading indicator */
@@ -211,6 +215,15 @@ class Content_Cards {
 						),
 						'callback' => 'select',
 					),
+					'default_image' => array(
+						'title'=>__( 'Placeholder Image', 'content-cards' ),
+						'args' => array (
+							'button_text' 			=> __( 'Upload Image', 'content-cards' ),
+							'uploader_button_text' 	=> __( 'Select File', 'content-cards' ),
+							'description' 			=> __( 'Placeholder image for Content Cards.', 'content-cards' ),
+						),
+						'callback' => 'file',
+					),					
 				),
 			),
 		);
@@ -482,11 +495,41 @@ class Content_Cards {
 				}				
 			}
 		}
+		if ( $data && !$result ) {
+			$result = self::get_remote_data_fallback( $data );
+		}
 		if ( $result ) {
+			if ( !isset( $result['image'] ) ) {
+				$result['image'] = self::$options['default_image'];
+			}
+			if ( !isset( $result['site_name'] ) ) {
+				$result['site_name'] = parse_url( $url, PHP_URL_HOST );
+			}
 			$result['cc_last_updated'] = time();
 		}
 		return $result;
 	} 
+
+	private static function get_remote_data_fallback( $data ) {
+		$result = array();
+
+		$doc = new DOMDocument;
+		$doc->loadHTML( $data );
+
+		$title = $doc->getElementsByTagName( 'title' );
+		$title = $title[0];
+
+		$xpath = new DOMXPath($doc);
+		$description = $xpath->query('//meta[@name="description"]/@content');
+
+		if ( $title && $description ) {
+			$result = array(
+				'title' => $title,
+				'description' => $description
+			);
+		}
+		return $result;
+	}
 
     public static  function init_preview() {
         add_action( 'print_media_templates', array( 'Content_Cards', 'print_media_templates' ) );
@@ -547,6 +590,15 @@ class Content_Cards {
     	);
     	wp_localize_script( 'content-cards', 'contentcards', $data );
     }
+
+	public static function admin_scripts() {
+    	wp_register_script( 'content-cards-upload', plugins_url( 'content-cards-upload.js', __FILE__ ) , array('jquery','media-upload','thickbox') );
+	    if ( 'settings_page_content-cards-settings' == get_current_screen() -> id ) {
+	        wp_enqueue_media();
+	        wp_enqueue_script( 'content-cards-upload' );
+	    }		
+	}	
+
 }
 
 /**
