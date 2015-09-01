@@ -539,7 +539,7 @@ class Content_Cards {
     			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
     			'link_dialog_title' => __( 'Edit Content Card', 'content-cards' ),
 					'loading_image_heading' => __( 'This Content Card is still processing', 'content-cards' ),
-					'loading_image_text' => __( 'If this message persists, make sure the link you are trying to embed is reachable.', 'content-cards' ),
+					'loading_image_text' => __( 'If this message persists, make sure the link you are trying to embed is reachable. While your content card hasn\'t been processed, visitors will see a normal link.' , 'content-cards' ),
     		)
     	);
     	wp_localize_script( 'content-cards', 'contentcards', $data );
