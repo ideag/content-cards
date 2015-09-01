@@ -27,9 +27,10 @@ class Content_Cards {
 	public static $temp_data = array();
 
 	public static function init() {
-		self::$options['default_image'] = plugins_url( 'content-cards-placeholder.png', __FILE__ );
 		$options = get_option( 'content-cards_options' );
+
 		self::$options = wp_parse_args( $options, self::$options );
+
 		if ( isset( self::$options['theme'] ) ) {
 			self::$options['skin'] = self::$options['theme'];
 			unset( self::$options['theme'] );
@@ -154,17 +155,28 @@ class Content_Cards {
 		return $template;
 	}
 
+
+	/**
+	 * Gets the placeholder image for the Content Card
+	 *
+	 * @return mixed|string|void
+	 */
+	private static function get_placeholder( ) {
+		$template = self::_get_file( false, 'png', 'placeholder', self::$options['skin'], 'uri'  );
+		$template = apply_filters( 'content_cards_stylesheet', $template );
+		return $template;
+	}
+
 	/**
 	 * Adds admin stylesheet
 	 */
 	public static function admin_init() {
 		if ( self::$stylesheet ) {
 			add_editor_style( self::$stylesheet );		
-			add_editor_style( plugins_url( 'content-cards-editor.css', __FILE__ ) );
 		}
-
+		
 		/* Stylesheet for loading indicator */
-		add_editor_style( plugins_url( 'skins/content-cards-editor.css', __FILE__ ) );
+		add_editor_style( plugins_url( 'content-cards-editor.css', __FILE__ ) );
 	}
 
 	/**
@@ -409,6 +421,10 @@ class Content_Cards {
 				wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'content_cards_update', $args );
 			}
 		}
+		if ( $result && !isset( $result['image'] ) ) {
+			$result['image'] = self::$options['default_image'] ? self::$options['default_image'] : self::get_placeholder();
+		}
+
 		return $result;
 	}
 
@@ -500,9 +516,6 @@ class Content_Cards {
 			$result = self::get_remote_data_fallback( $data );
 		}
 		if ( $result ) {
-			if ( !isset( $result['image'] ) ) {
-				$result['image'] = self::$options['default_image'];
-			}
 			if ( !isset( $result['site_name'] ) ) {
 				$result['site_name'] = parse_url( $url, PHP_URL_HOST );
 			}
