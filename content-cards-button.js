@@ -9,7 +9,7 @@
                     body: [{
                         type: 'textbox',
                         name: 'uri',
-                        label: 'contentcards.texts.link_label,'
+                        label: contentcards.texts.link_label,
                     },
                     {
                         type: 'checkbox',
