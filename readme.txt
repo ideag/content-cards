@@ -73,7 +73,7 @@ Content Cards provides three new template tags: `get_cc_data()`, `the_cc_data()`
 
 1. A Content Card embedded in post content
 2. Content-cards are fully integrated with the visual editor
-2. The dialog to insert Content Cards shortcode into post content
+3. The dialog to insert Content Cards shortcode into post content
 4. The Content Cards settings page
 5. The Content Cards appearance on the official "Twenty" family of WordPress themes
 
