@@ -163,7 +163,29 @@ class Content_Cards {
 	 */
 	private static function get_placeholder( ) {
 		$template = self::_get_file( false, 'png', 'placeholder', self::$options['skin'], 'uri'  );
-		$template = apply_filters( 'content_cards_stylesheet', $template );
+		$template = apply_filters( 'content_cards_placeholder', $template );
+		return $template;
+	}
+
+	/**
+	 * Gets the loading image for the Content Card
+	 *
+	 * @return mixed|string|void
+	 */
+	private static function get_loading_image( ) {
+		$template = self::_get_file( false, 'gif', 'loading', self::$options['skin'], 'uri'  );
+		$template = apply_filters( 'content_cards_loading_image', $template );
+		return $template;
+	}
+
+	/**
+	 * Gets the editor CSS image for the Content Card
+	 *
+	 * @return mixed|string|void
+	 */
+	private static function get_editor_stylesheet( ) {
+		$template = self::_get_file( false, 'css', 'editor', self::$options['skin'], 'uri'  );
+		$template = apply_filters( 'content_cards_editor_stylesheet', $template );
 		return $template;
 	}
 
@@ -174,9 +196,9 @@ class Content_Cards {
 		if ( self::$stylesheet ) {
 			add_editor_style( self::$stylesheet );		
 		}
-		
+
 		/* Stylesheet for loading indicator */
-		add_editor_style( plugins_url( 'content-cards-editor.css', __FILE__ ) );
+		add_editor_style( self::get_editor_stylesheet() );
 	}
 
 	/**
@@ -591,7 +613,7 @@ class Content_Cards {
         }
     	wp_enqueue_script( 'content-cards', plugins_url( 'content-cards.js', __FILE__ ), array('shortcode'), false, true );
     	$data = array(
-    		'loading_image' => plugins_url( 'content-cards-loading.gif', __FILE__ ),
+    		'loading_image' => self::get_loading_image(),
     		'texts' => array(
     			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
     			'target_label' 		=> __( 'Target', 'content-cards' ),
