@@ -1,7 +1,7 @@
 === Content Cards ===
 
 Contributors: ideag, khromov
-Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet
+Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content card
 Donate link: http://arunas.co#coffee
 Requires at least: 4.2.0
 Tested up to: 4.3.0
