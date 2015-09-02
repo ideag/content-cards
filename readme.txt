@@ -2,7 +2,7 @@
 
 Contributors: ideag, khromov
 Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet
-Donate link: https://arunas.co#coffee
+Donate link: http://arunas.co#coffee
 Requires at least: 4.2.0
 Tested up to: 4.3.0
 Stable tag: 0.9.0
@@ -18,7 +18,7 @@ For individual links, You can insert a Content Card via shortcode `[contentcards
 
 This plugin was built by [Arūnas Liuiza](http://arunas.co) and [Stanislav Khromov](http://snippets.khromov.se/). It is being developed on [GitHub](http://github.com/ideag/content-cards). If you have any questions, issues, need support, or want to contribute, please let us know [here](http://github.com/ideag/content-cards/issues).
 
-We are machines that convert coffee into code, so feel free to [buy us a cup](https://arunas.co#coffee). Or two. Or ten.
+We are machines that convert coffee into code, so feel free to [buy us a cup](http://arunas.co#coffee). Or two. Or ten.
 
 Also, please check out our other plugins:
 
