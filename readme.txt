@@ -11,10 +11,11 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-Display rich snippets instead of simple links. Content Cards makes any website embedable to WordPress posts the same way oEmbed-enabled websites (YouTube, Twitter, SoundCloud, etc.) are. 
-This plugin reads OpenGraph data (the same data that Facebook uses to display information about shared links) and formats a rich snippet accordingly.
+Content Cards make ordinary web links great by making it possible to embed a beautiful Content Card to
 
-For individual links, You can insert a Content Card via shortcode `[contentcards url="http://yoursite.com/article-1"]`. If You often use Content Cards for some website, you can white list the domain name (`yoursite.com`) as an oEmbed provider via Plugin's Settings page and then it will behave the same way other oEmbed providers do - You will just have to paste plaintext link to a separate paragraph an Content Card will be generated automatically.
+By using OpenGraph data, Content Cards grabs the title, description and associated image to the links you embed - it's similar to how you can embed other websites, such as YouTube, Twitter, SoundCloud and more.
+
+For individual links, You can insert a Content Card via shortcode `[contentcards url="http://yoursite.com/article-1"]`. If you often use Content Cards for some website, you can register the domain name (for example: `yoursite.com`) as an oEmbed provider via Plugin's Settings page and then it will behave the same way other oEmbed providers do - you will just have to paste plaintext link to a separate paragraph an Content Card will be generated automatically.
 
 This plugin was built by [Arūnas Liuiza](http://arunas.co) and [Stanislav Khromov](http://snippets.khromov.se/). It is being developed on [GitHub](http://github.com/ideag/content-cards). If you have any questions, issues, need support, or want to contribute, please let us know [here](http://github.com/ideag/content-cards/issues).
 
@@ -31,17 +32,17 @@ There are two ways of inserting Content Cards into WordPress posts - shortcode a
 
 = Shortcode =
 
-Shortcode is the simplest way - You just put `[contentcards url="http://yourdomain.com/article/1"]` into Your post content and it gets replaced with a content card. 
+Shortcode is the simplest way - You just put `[contentcards url="http://yourdomain.com/article/1"]` into your post content and it gets replaced with a content card.
 The shortcode accepts two attributes:
 
 * `url` (requried) - link to the site you want to display Content Card for.
 * `target` (optional) - if you want force links to open in new tab, use `target="_blank"` the same you would in actual links. This overrides the global option in Content Cards Settings page.
 
-You can also insert the shortcode via a dialog, that is displayed when you press `CC` button in WordPress Editor's (tinyMCE) toolbar.
+You can also insert the shortcode via a button in your visual editor. Start by pressing the `CC` button in WordPress Editor's (TinyMCE) toolbar.
 
 = oEmbed = 
 
-If You find that You are adding a lot of Content Cards from some single domain, You can save Yourself some work, by white-listing that website as oEmbed provider in Content Card Settings page. 
+If You find that you are adding a lot of Content Cards from some single domain, You can save yourself some work, by white-listing that website as oEmbed provider in Content Card Settings page.
 
 White-listed sites work the same way any other oEmbed provider in WordPress (YouTube, Twitter, SoundCloud, etc.) - You just need to put a plaintext link in a separate line in the WordPress editor and it will be replaced with a Content Card.
 
@@ -49,7 +50,7 @@ In Content Cards Settings page you can provide a list of white-listed sites. Put
 
 = Skins = 
 
-Content Cards come with two default skins - `Default` and `Default Dark` - created by Stanislav Khromov. These skins are designed to provide minimal structural styling and blend in nicely with active theme by inheriting fonts, colors, etc. 
+Content Cards come with two default skins - `Default` and `Default Dark` - created by Stanislav Khromov. These skins are designed to provide minimal structural styling and blend in nicely with active theme by inheriting the font from the theme.
 
 All skin template files can be found in `content-cards/skins/*` directory and they can be overwritten by providing the same template in active theme. For example, if you want to overwrite Content Cards stylesheet, You should add `content-cards.css` to Your theme directory.
 
