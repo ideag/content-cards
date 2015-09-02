@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Content Cards
-Description: Pull OpenGraph data from other websites and show them as "Cards"
+Description: Embed any link from the web easily as a beautiful Content Card
 Version: 0.9.0
 Author: Arūnas Liuiza
 Author URI: http://arunas.co
