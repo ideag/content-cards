@@ -11,7 +11,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-Content Cards make ordinary web links great by making it possible to embed a beautiful Content Card to
+Content Cards make ordinary web links great by making it possible to embed a beautiful Content Card to link to any web site.
 
 By using OpenGraph data, Content Cards grabs the title, description and associated image to the links you embed - it's similar to how you can embed other websites, such as YouTube, Twitter, SoundCloud and more.
 
