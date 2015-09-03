@@ -22,6 +22,7 @@ class Content_Cards {
 		'target' => false,
 		'update_interval' => DAY_IN_SECONDS,
 		'default_image' => '',
+		'word_limit' => 55,
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
@@ -257,7 +258,16 @@ class Content_Cards {
 							'description' 			=> __( 'Placeholder image for Content Cards.', 'content-cards' ),
 						),
 						'callback' => 'file',
-					),					
+					),
+					'word_limit' => array(
+						'title'=> __('Word Limit','content-cards'),
+						'args' => array (
+							'min' => 0,
+							'description'			=> __('Limit maximum number of words in description.','content-cards'),
+						),
+						'callback' => 'number',
+					),
+			
 				),
 			),
 		);
@@ -544,6 +554,9 @@ class Content_Cards {
 			$result['favicon'] = self::get_remote_favicon( $data, $url );
 			$result['image'] = self::force_absolute_url( $result['image'], $url );
 			$result['cc_last_updated'] = time();
+			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
+				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
+			}
 		}
 		return $result;
 	} 
