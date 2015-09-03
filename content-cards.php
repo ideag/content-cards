@@ -434,7 +434,7 @@ class Content_Cards {
 		if ( !$result ) {
 			$args = array( $post_id, $url, $url_md5, MINUTE_IN_SECONDS );
 			if ( false === wp_next_scheduled( 'content_cards_retry', $args ) ) {
-				$result = self::get_remote_data( $url );
+				$result = self::get_remote_data( $url, $post_id );
 				if ( $result ) {
 					$result['url'] = $url;
 					$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
@@ -480,7 +480,7 @@ class Content_Cards {
 		// update link metadata from remote source
 		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
 		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
-			$new_result = self::get_remote_data( $url );
+			$new_result = self::get_remote_data( $url, $post_id );
 			if ( $new_result ) {
 				$new_result['url'] = $url;
 				$result = $new_result;
@@ -511,7 +511,7 @@ class Content_Cards {
 		// update link metadata from remote source
 		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
 		if ( $result ) {
-			$new_result = self::get_remote_data( $url );
+			$new_result = self::get_remote_data( $url, $post_id );
 			if ( $new_result ) {
 				$new_result['url'] = $url;
 				$result = $new_result;
@@ -531,7 +531,7 @@ class Content_Cards {
 	 * @param $url
 	 * @return array|mixed
 	 */
-	private static function get_remote_data( $url ) {
+	private static function get_remote_data( $url, $post_id ) {
 		require_once( 'includes/opengraph.php' );
 		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
 		$data = mb_convert_encoding($data, 'HTML-ENTITIES', 'UTF-8');
@@ -553,6 +553,21 @@ class Content_Cards {
 			}
 			$result['favicon'] = self::get_remote_favicon( $data, $url );
 			$result['image'] = self::force_absolute_url( $result['image'], $url );
+			if ( $result['image'] ) {
+				if ( isset( $result['image_id'] ) && $result['image_id'] ) {
+					$image_data = get_post_meta( $result['image_id'], 'content_cards_cached', true );
+					if ( $image_data['original_url'] !== $result['image'] ) {
+						wp_delete_attachment( $result['image_id'], true );
+						unset( $result['image_id'] );
+					}
+				}
+			    if ( !isset( $result['image_id'] ) || !$result['image_id'] ) {
+					$image_id = self::cache_image( $result['image'], $post_id );
+					if ( $image_id ) {
+						$result['image_id'] = $image_id;
+					}
+				}
+			}
 			$result['cc_last_updated'] = time();
 			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
 				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
@@ -560,6 +575,70 @@ class Content_Cards {
 		}
 		return $result;
 	} 
+
+	private static function cache_image( $image_url, $post_id ) {
+		$temp_file = download_url( $image_url );
+		if ( !is_wp_error( $temp_file ) ) {
+			$allowed_mime_types = array( 
+				'image/jpeg',
+				'image/gif',
+				'image/png',
+				'image/bmp',
+				'image/tiff',
+				'image/x-icon',
+			);
+			$mime = self::_get_mime_type( $temp_file);
+			preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png|ico)/i', $image_url, $matches);
+			if ( in_array( $mime, $allowed_mime_types ) ) {
+				$file = array(
+					'name' => basename($matches[0]),
+					'type' => $mime,
+					'tmp_name' => $temp_file,
+					'error' => 0,
+					'size' => filesize($temp_file),
+				);			
+				$overrides = array(
+					'test_form' => false,
+					'test_size' => true,
+					'test_upload' => true,
+				);
+				$a = wp_check_filetype_and_ext($file['tmp_name'],$file['name'],false);
+				$movefile = wp_handle_sideload( $file, $overrides );
+				if ( $movefile && !isset( $movefile['error'] ) ) {
+					$wp_upload_dir = wp_upload_dir();
+					$attachment = array(
+						'guid'           => $wp_upload_dir['url'] . '/' . basename( $movefile['file'] ), 
+						'post_mime_type' => $movefile['type'],
+						'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $movefile['file'] ) ),
+						'post_content'   => '',
+						'post_status'    => 'inherit'
+					);
+					$attach_id = wp_insert_attachment( $attachment, $movefile['file'] );
+					require_once( ABSPATH . 'wp-admin/includes/image.php' );
+					$attach_data = wp_generate_attachment_metadata( $attach_id, $movefile['file'] );
+					wp_update_attachment_metadata( $attach_id, $attach_data );
+					$cached = array(
+						'post_id' => $post_id,
+						'original_url' => $image_url,
+					);
+					add_post_meta( $attach_id, 'content_cards_cached', $cached );
+					return $attach_id;
+				}
+			}
+		}
+		return false;
+	}
+	private static function _get_mime_type($file) {
+		$mtype = false;
+		if (function_exists('finfo_open')) {
+			$finfo = finfo_open(FILEINFO_MIME_TYPE);
+			$mtype = finfo_file($finfo, $file);
+			finfo_close($finfo);
+		} elseif (function_exists('mime_content_type')) {
+			$mtype = mime_content_type($file);
+		} 
+		return $mtype;
+	}
 
 	private static function get_remote_favicon( $html, $url ) {
 		$old_libxml_error = libxml_use_internal_errors(true);
