@@ -81,3 +81,7 @@ html body .content_cards_card a:active {
 	margin: 0;
 	padding: 0;
 }
+
+.content_cards_favicon {
+	max-height: 24px;
+}

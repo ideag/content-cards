@@ -18,6 +18,7 @@
 		</a>
 	</div>
 	<div class="content_cards_site_name">
+		<?php if ( get_cc_data('favicon') ) : ?><img src="<?php the_cc_data( 'favicon', 'esc_url' ); ?>" alt="<?php the_cc_data( 'site_name', 'esc_attr' ); ?>" class="content_cards_favicon"/><?php endif; ?>
 		<?php the_cc_data( 'site_name' ); ?>
 	</div>
 </div>

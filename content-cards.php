@@ -541,16 +541,50 @@ class Content_Cards {
 			if ( !isset( $result['site_name'] ) ) {
 				$result['site_name'] = parse_url( $url, PHP_URL_HOST );
 			}
+			$result['favicon'] = self::get_remote_favicon( $data, $url );
+			$result['image'] = self::force_absolute_url( $result['image'], $url );
 			$result['cc_last_updated'] = time();
 		}
 		return $result;
 	} 
 
+	private static function get_remote_favicon( $html, $url ) {
+		$old_libxml_error = libxml_use_internal_errors(true);
+		$dom = new DOMDocument();
+        $dom->loadHTML( $html );		
+		libxml_use_internal_errors($old_libxml_error);
+        $links = $dom->getElementsByTagName('link');
+        $favicon = false;
+        for( $i=0; $i < $links->length; $i++ ) {
+            $link = $links->item( $i );
+            if ( in_array( $link->getAttribute('rel'), array( 'icon', "Shortcut Icon", "shortcut icon") ) ) {
+                $favicon = $link->getAttribute('href');
+                break;
+            }
+        }
+        $favicon = self::force_absolute_url( $favicon, $url );
+        return $favicon;
+	}
+
+	private static function force_absolute_url( $url, $site_url ) {
+		if ( $url && !filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			$url_parts = parse_url($site_url);
+    		$site_url = $url_parts['scheme'] . "://" . $url_parts['host'] . "/";
+    		if ( 0 !== strpos( $url, '/' ) ) {
+    			$url = '/'.$url;
+    		}
+    		$url = untrailingslashit( $site_url ) . $url;
+		}
+		return $url;
+	}
+
 	private static function get_remote_data_fallback( $data ) {
 		$result = array();
 
+		$old_libxml_error = libxml_use_internal_errors(true);
 		$doc = new DOMDocument;
 		$doc->loadHTML( $data );
+		libxml_use_internal_errors($old_libxml_error);
 
 		$title = $doc->getElementsByTagName( 'title' );
 		$title = $title[0];
