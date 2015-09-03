@@ -614,6 +614,7 @@ class Content_Cards {
     	wp_enqueue_script( 'content-cards', plugins_url( 'content-cards.js', __FILE__ ), array('shortcode'), false, true );
     	$data = array(
     		'loading_image' => self::get_loading_image(),
+    		'icon' => plugins_url( 'content-cards-button.png', __FILE__ ),
     		'texts' => array(
     			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
     			'target_label' 		=> __( 'Target', 'content-cards' ),
