@@ -44,6 +44,13 @@ class Content_Cards {
 		add_action( 'content_cards_update', array( 'Content_Cards', 'update_data' ), 10, 3 );
 		add_action( 'content_cards_retry',  array( 'Content_Cards', 'retry_data' ), 10, 4 );
 
+		add_filter( 'ajax_query_attachments_args',  array( 'Content_Cards', 'filter_cached_images' ), 10, 1 );
+		add_action( 'pre_get_posts',  				array( 'Content_Cards', 'filter_cached_images_query' ), 10, 1 );
+		add_filter( 'wp_count_attachments',  		array( 'Content_Cards', 'filter_cached_images_count' ), 10, 2 );
+		add_filter( 'query',				  		array( 'Content_Cards', 'filter_cached_images_orphans' ), 10, 1 );
+
+		
+
 		add_shortcode( 'contentcard', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'opengraph', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'contentcards', 		array( 'Content_Cards', 'shortcode' ) );
@@ -575,6 +582,55 @@ class Content_Cards {
 		}
 		return $result;
 	} 
+
+	public static function filter_cached_images( $args ) {
+		// var_dump($args);
+		if ( !isset($args['meta_query'])) {
+			$args['meta_query'] = array();
+		}
+		$args['meta_query'][] = array(
+			'key' 		=> 'content_cards_cached',
+			'compare'	=> 'NOT EXISTS',
+		);
+		return $args;
+	}
+	public static function filter_cached_images_query( $query ) {
+		if ( !is_admin() ) {
+			return $query;
+		}
+		if (defined('DOING_AJAX') && DOING_AJAX) {
+			return $query;
+		}
+		if ( 'upload' !== get_current_screen()->base ) {
+			return $query;
+		}
+		$q = $query->get( 'meta_query' );
+		$q[] = array(
+			'key' 		=> 'content_cards_cached',
+			'compare'	=> 'NOT EXISTS',
+		);
+		$query->set( 'meta_query', $q );
+		return $query;
+	}
+	public static function filter_cached_images_count( $count ) {
+		$cached = 'image/cached';
+		$count->$cached = self::_count_cached() * -1;
+		return $count;
+	}
+	public static function filter_cached_images_orphans( $query ) {
+		global $wpdb;
+		if ( "SELECT COUNT( * ) FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_status != 'trash' AND post_parent < 1" == $query ) {
+			$count_cached = self::_count_cached();
+			$query = "SELECT COUNT( * ) - {$count_cached} FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_status != 'trash' AND post_parent < 1";
+		}
+		return $query;
+	}
+	private static function _count_cached() {
+		global $wpdb;
+		$q = "SELECT COUNT( * ) FROM {$wpdb->postmeta} WHERE meta_key='content_cards_cached'";
+		$q = $wpdb->get_var($q);
+		return $q;
+	}
 
 	private static function cache_image( $image_url, $post_id ) {
 		$temp_file = download_url( $image_url );
