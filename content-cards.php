@@ -636,14 +636,12 @@ class Content_Cards {
 	public static function image_cleanup( $image_id ) {
 		$image_meta = get_post_meta( $image_id, 'content_cards_cached', true );
 		$post_id = $image_meta['post_id'];
-		$image_url = $image_meta['original_url'];
 		$meta = get_post_meta( $post_id ); 
 		$found = false;
 		foreach ( $meta as $key => $value ) {
 			if ( 0 === strpos( $key, 'content_cards_') ) {
 				$value = unserialize($value[0]);
-				if ( $image_url === $value['image'] )  {
-					var_dump('rastas');
+				if ( isset( $value['image_id'] ) && $image_id === $value['image_id'] )  {
 					$found = $key;
 					break;
 				}
