@@ -21,6 +21,7 @@ class Content_Cards {
 		'skin' => 'default',
 		'target' => false,
 		'update_interval' => DAY_IN_SECONDS,
+		'cleanup_interval' => DAY_IN_SECONDS,
 		'default_image' => '',
 		'word_limit' => 55,
 	);
@@ -49,7 +50,13 @@ class Content_Cards {
 		add_filter( 'wp_count_attachments',  		array( 'Content_Cards', 'filter_cached_images_count' ), 10, 2 );
 		add_filter( 'query',				  		array( 'Content_Cards', 'filter_cached_images_orphans' ), 10, 1 );
 
-		
+		if ( false === wp_next_scheduled( 'content_cards_schedule_cleanups' ) ) {
+			wp_schedule_event( time() , 'daily', 'content_cards_schedule_cleanups' );
+		}
+		add_action( 'content_cards_schedule_cleanups', array( 'Content_Cards', 'schedule_cleanups' ) );
+		add_action( 'content_cards_link_cleanup', array( 'Content_Cards', 'link_cleanup' ), 10, 1 );
+		add_action( 'content_cards_image_cleanup', array( 'Content_Cards', 'image_cleanup' ), 10, 1 );
+
 
 		add_shortcode( 'contentcard', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'opengraph', 		array( 'Content_Cards', 'shortcode' ) );
@@ -464,6 +471,12 @@ class Content_Cards {
 			$result['image'] = self::$options['default_image'] ? self::$options['default_image'] : self::get_placeholder();
 		}
 
+		$args = array(
+			$post_id,
+		);
+		if ( false === wp_next_scheduled( 'content_cards_link_cleanup', $args ) ) {
+			wp_schedule_single_event( time() + self::$options['cleanup_interval'] - HOUR_IN_SECONDS + mt_rand(0, HOUR_IN_SECONDS), 'content_cards_link_cleanup', $args );
+		}
 		return $result;
 	}
 
@@ -559,8 +572,8 @@ class Content_Cards {
 				$result['site_name'] = parse_url( $url, PHP_URL_HOST );
 			}
 			$result['favicon'] = self::get_remote_favicon( $data, $url );
-			$result['image'] = self::force_absolute_url( $result['image'], $url );
-			if ( $result['image'] ) {
+			if ( isset($result['image']) && $result['image'] ) {
+				$result['image'] = self::force_absolute_url( $result['image'], $url );
 				if ( isset( $result['image_id'] ) && $result['image_id'] ) {
 					$image_data = get_post_meta( $result['image_id'], 'content_cards_cached', true );
 					if ( $image_data['original_url'] !== $result['image'] ) {
@@ -582,9 +595,66 @@ class Content_Cards {
 		}
 		return $result;
 	} 
+	public static function schedule_cleanups() {
+		global $wpdb;
+		$q = "SELECT DISTINCT `post_id` FROM {$wpdb->postmeta} WHERE meta_key LIKE 'content_cards_%' AND meta_key != 'content_cards_cached'";
+		$posts = $wpdb->get_col( $q, 0 );
+		foreach ($posts as $post_id) {
+			$args = array(
+				$post_id,
+			);
+			if ( false === wp_next_scheduled( 'content_cards_link_cleanup', $args ) ) {
+				wp_schedule_single_event( time() + self::$options['cleanup_interval'] - HOUR_IN_SECONDS + mt_rand(0, HOUR_IN_SECONDS), 'content_cards_link_cleanup', $args );
+			}
+		}
+		$q = "SELECT DISTINCT `post_id` FROM {$wpdb->postmeta} WHERE meta_key = 'content_cards_cached'";
+		$images = $wpdb->get_col( $q, 0 );
+		foreach ($images as $post_id) {
+			$args = array(
+				$post_id,
+			);
+			if ( false === wp_next_scheduled( 'content_cards_image_cleanup', $args ) ) {
+				wp_schedule_single_event( time() + self::$options['cleanup_interval'] - HOUR_IN_SECONDS + mt_rand(0, HOUR_IN_SECONDS), 'content_cards_image_cleanup', $args );
+			}
+		}
+	}
+	public static function link_cleanup( $post_id ) {
+		$meta = get_post_meta( $post_id );
+		$content = get_post_field('post_content', $post_id);
+		foreach ( $meta as $key => $value ) {
+			if ( 0 === strpos( $key, 'content_cards_') ) {
+				$value = unserialize($value[0]);
+				if ( false === strpos( $content,  $value['url'] ) ) {
+					delete_post_meta( $post_id, $key );
+					if ( $value['image_id'] ) {
+						wp_delete_attachment( $value['image_id'], true );
+					}
+				}						
+			}
+		}
+	}
+	public static function image_cleanup( $image_id ) {
+		$image_meta = get_post_meta( $image_id, 'content_cards_cached', true );
+		$post_id = $image_meta['post_id'];
+		$image_url = $image_meta['original_url'];
+		$meta = get_post_meta( $post_id ); 
+		$found = false;
+		foreach ( $meta as $key => $value ) {
+			if ( 0 === strpos( $key, 'content_cards_') ) {
+				$value = unserialize($value[0]);
+				if ( $image_url === $value['image'] )  {
+					var_dump('rastas');
+					$found = $key;
+					break;
+				}
+			}
+		}
+		if ( !$found ) {
+			wp_delete_attachment( $image_id, true );
+		}
+	}
 
 	public static function filter_cached_images( $args ) {
-		// var_dump($args);
 		if ( !isset($args['meta_query'])) {
 			$args['meta_query'] = array();
 		}
