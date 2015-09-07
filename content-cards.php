@@ -641,7 +641,7 @@ class Content_Cards {
 		foreach ( $meta as $key => $value ) {
 			if ( 0 === strpos( $key, 'content_cards_') ) {
 				$value = unserialize($value[0]);
-				if ( isset( $value['image_id'] ) && $image_id === $value['image_id'] )  {
+				if ( isset( $value['image_id'] ) && $image_id == $value['image_id'] )  {
 					$found = $key;
 					break;
 				}
@@ -917,4 +917,47 @@ function the_cc_data( $key, $sanitize = false ) {
  */
 function the_cc_target() {
 	echo Content_Cards::$temp_data['target'] ? ' target="_blank"' : '';
+}
+
+/**
+ * Returns cached image url or original image url, if cache is not available
+ *
+ * @param $size - WordPress image size
+ * @param $sanitize
+ */
+function get_cc_image( $size = 'thumbnail', $sanitize = false ) {
+	if ( isset(Content_Cards::$temp_data['image_id']) && Content_Cards::$temp_data['image_id'] ) {
+		$result = wp_get_attachment_image_src( Content_Cards::$temp_data['image_id'], $size );
+		$result = $result[0];
+		if (is_callable($sanitize)) {
+			$result = call_user_func( $sanitize, $result );
+		}
+		return $result;
+	} else if ( isset(Content_Cards::$temp_data['image']) && Content_Cards::$temp_data['image'] ) {
+		return get_cc_data( 'image', $sanitize );
+	} else {
+		return false;
+	}
+}
+
+/**
+ * Prints cached image original image, if cache is not available
+ *
+ * @param $size - WordPress image size
+ * @param $args
+ */
+function the_cc_image( $size = 'thumbnail', $args = array() ) {
+	$defaults = array(
+		'alt' => get_cc_data( 'title' ),
+	);
+	$args = wp_parse_args( $args, $defaults );
+	$attributes = array();
+	foreach ($args as $key => $value) {
+		$value = esc_attr( $value );
+		$attributes[] = "{$key}=\"{$value}\"";
+	}
+	$attributes = implode( ' ', $attributes );
+	$img = get_cc_image( $size, 'esc_url' );
+	$result = "<img src=\"{$img}\" {$attributes}>";
+	echo $result;
 }
