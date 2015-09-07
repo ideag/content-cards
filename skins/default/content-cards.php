@@ -2,7 +2,7 @@
 	<?php if ( get_cc_data( 'image' ) ) : ?>
 		<div class="content_cards_image">
 				<a class="content_cards_image_link" href="<?php the_cc_data( 'url', 'esc_url' ); ?>"<?php the_cc_target(); ?>>
-						<?php the_cc_image( 'full' ); ?><!--<img src="<?php the_cc_data( 'image', 'esc_url' ); ?>" alt="<?php the_cc_data( 'title', 'esc_attr' ); ?>" />-->
+					<?php the_cc_image( 'full' ); ?>
 				</a>
 		</div>
 	<?php endif; ?>
