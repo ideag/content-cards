@@ -9,6 +9,8 @@ Stable tag: 0.9.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
+Embed any link from the web easily as a beautiful Content Card.
+
 == Description ==
 
 Content Cards make ordinary web links great by making it possible to embed a beautiful Content Card to link to any web site.
@@ -38,7 +40,7 @@ The shortcode accepts two attributes:
 * `url` (requried) - link to the site you want to display Content Card for.
 * `target` (optional) - if you want force links to open in new tab, use `target="_blank"` the same you would in actual links. This overrides the global option in Content Cards Settings page.
 
-You can also insert the shortcode via a button in your visual editor. Start by pressing the `CC` button in WordPress Editor's (TinyMCE) toolbar.
+You can also insert the shortcode via a button in your visual editor. Start by pressing the Content Cards icon in WordPress visual editor's (TinyMCE) toolbar. If no other plugins are adding their buttons, our button should be the last one in the top toolbar.
 
 = oEmbed = 
 
