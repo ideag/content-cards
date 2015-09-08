@@ -1,8 +1,7 @@
 ( function() {
     tinymce.PluginManager.add( 'contentcards', function( editor, url ) {
         editor.addButton( 'contentcards_shortcode', {
-            text: 'CC',
-            icon: false,
+            image: contentcards.icon,
             onclick: function() {
                 editor.windowManager.open( {
                     title: contentcards.texts.add_dialog_title,
