@@ -21,6 +21,7 @@ class Content_Cards {
 		'skin' => 'default',
 		'target' => false,
 		'update_interval' => DAY_IN_SECONDS,
+		'cleanup_interval' => DAY_IN_SECONDS,
 		'default_image' => '',
 		'word_limit' => 55,
 	);
@@ -43,6 +44,19 @@ class Content_Cards {
 		add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
 		add_action( 'content_cards_update', array( 'Content_Cards', 'update_data' ), 10, 3 );
 		add_action( 'content_cards_retry',  array( 'Content_Cards', 'retry_data' ), 10, 4 );
+
+		add_filter( 'ajax_query_attachments_args',  array( 'Content_Cards', 'filter_cached_images' ), 10, 1 );
+		add_action( 'pre_get_posts',  				array( 'Content_Cards', 'filter_cached_images_query' ), 10, 1 );
+		add_filter( 'wp_count_attachments',  		array( 'Content_Cards', 'filter_cached_images_count' ), 10, 2 );
+		add_filter( 'query',				  		array( 'Content_Cards', 'filter_cached_images_orphans' ), 10, 1 );
+
+		if ( false === wp_next_scheduled( 'content_cards_schedule_cleanups' ) ) {
+			wp_schedule_event( time() , 'daily', 'content_cards_schedule_cleanups' );
+		}
+		add_action( 'content_cards_schedule_cleanups', array( 'Content_Cards', 'schedule_cleanups' ) );
+		add_action( 'content_cards_link_cleanup', array( 'Content_Cards', 'link_cleanup' ), 10, 1 );
+		add_action( 'content_cards_image_cleanup', array( 'Content_Cards', 'image_cleanup' ), 10, 1 );
+
 
 		add_shortcode( 'contentcard', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'opengraph', 		array( 'Content_Cards', 'shortcode' ) );
@@ -434,7 +448,7 @@ class Content_Cards {
 		if ( !$result ) {
 			$args = array( $post_id, $url, $url_md5, MINUTE_IN_SECONDS );
 			if ( false === wp_next_scheduled( 'content_cards_retry', $args ) ) {
-				$result = self::get_remote_data( $url );
+				$result = self::get_remote_data( $url, $post_id );
 				if ( $result ) {
 					$result['url'] = $url;
 					$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
@@ -457,6 +471,12 @@ class Content_Cards {
 			$result['image'] = self::$options['default_image'] ? self::$options['default_image'] : self::get_placeholder();
 		}
 
+		$args = array(
+			$post_id,
+		);
+		if ( false === wp_next_scheduled( 'content_cards_link_cleanup', $args ) ) {
+			wp_schedule_single_event( time() + self::$options['cleanup_interval'] - HOUR_IN_SECONDS + mt_rand(0, HOUR_IN_SECONDS), 'content_cards_link_cleanup', $args );
+		}
 		return $result;
 	}
 
@@ -480,7 +500,7 @@ class Content_Cards {
 		// update link metadata from remote source
 		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
 		if ( $result && time() - $result['cc_last_updated'] > self::$options['update_interval'] ) {
-			$new_result = self::get_remote_data( $url );
+			$new_result = self::get_remote_data( $url, $post_id );
 			if ( $new_result ) {
 				$new_result['url'] = $url;
 				$result = $new_result;
@@ -511,7 +531,7 @@ class Content_Cards {
 		// update link metadata from remote source
 		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
 		if ( $result ) {
-			$new_result = self::get_remote_data( $url );
+			$new_result = self::get_remote_data( $url, $post_id );
 			if ( $new_result ) {
 				$new_result['url'] = $url;
 				$result = $new_result;
@@ -531,7 +551,7 @@ class Content_Cards {
 	 * @param $url
 	 * @return array|mixed
 	 */
-	private static function get_remote_data( $url ) {
+	private static function get_remote_data( $url, $post_id ) {
 		require_once( 'includes/opengraph.php' );
 		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
 		$data = mb_convert_encoding($data, 'HTML-ENTITIES', 'UTF-8');
@@ -552,7 +572,22 @@ class Content_Cards {
 				$result['site_name'] = parse_url( $url, PHP_URL_HOST );
 			}
 			$result['favicon'] = self::get_remote_favicon( $data, $url );
-			$result['image'] = self::force_absolute_url( $result['image'], $url );
+			if ( isset($result['image']) && $result['image'] ) {
+				$result['image'] = self::force_absolute_url( $result['image'], $url );
+				if ( isset( $result['image_id'] ) && $result['image_id'] ) {
+					$image_data = get_post_meta( $result['image_id'], 'content_cards_cached', true );
+					if ( $image_data['original_url'] !== $result['image'] ) {
+						wp_delete_attachment( $result['image_id'], true );
+						unset( $result['image_id'] );
+					}
+				}
+			    if ( !isset( $result['image_id'] ) || !$result['image_id'] ) {
+					$image_id = self::cache_image( $result['image'], $post_id );
+					if ( $image_id ) {
+						$result['image_id'] = $image_id;
+					}
+				}
+			}
 			$result['cc_last_updated'] = time();
 			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
 				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
@@ -560,6 +595,174 @@ class Content_Cards {
 		}
 		return $result;
 	} 
+	public static function schedule_cleanups() {
+		global $wpdb;
+		$q = "SELECT DISTINCT `post_id` FROM {$wpdb->postmeta} WHERE meta_key LIKE 'content_cards_%' AND meta_key != 'content_cards_cached'";
+		$posts = $wpdb->get_col( $q, 0 );
+		foreach ($posts as $post_id) {
+			$args = array(
+				$post_id,
+			);
+			if ( false === wp_next_scheduled( 'content_cards_link_cleanup', $args ) ) {
+				wp_schedule_single_event( time() + self::$options['cleanup_interval'] - HOUR_IN_SECONDS + mt_rand(0, HOUR_IN_SECONDS), 'content_cards_link_cleanup', $args );
+			}
+		}
+		$q = "SELECT DISTINCT `post_id` FROM {$wpdb->postmeta} WHERE meta_key = 'content_cards_cached'";
+		$images = $wpdb->get_col( $q, 0 );
+		foreach ($images as $post_id) {
+			$args = array(
+				$post_id,
+			);
+			if ( false === wp_next_scheduled( 'content_cards_image_cleanup', $args ) ) {
+				wp_schedule_single_event( time() + self::$options['cleanup_interval'] - HOUR_IN_SECONDS + mt_rand(0, HOUR_IN_SECONDS), 'content_cards_image_cleanup', $args );
+			}
+		}
+	}
+	public static function link_cleanup( $post_id ) {
+		$meta = get_post_meta( $post_id );
+		$content = get_post_field('post_content', $post_id);
+		foreach ( $meta as $key => $value ) {
+			if ( 0 === strpos( $key, 'content_cards_') ) {
+				$value = unserialize($value[0]);
+				if ( false === strpos( $content,  $value['url'] ) ) {
+					delete_post_meta( $post_id, $key );
+					if ( $value['image_id'] ) {
+						wp_delete_attachment( $value['image_id'], true );
+					}
+				}						
+			}
+		}
+	}
+	public static function image_cleanup( $image_id ) {
+		$image_meta = get_post_meta( $image_id, 'content_cards_cached', true );
+		$post_id = $image_meta['post_id'];
+		$meta = get_post_meta( $post_id ); 
+		$found = false;
+		foreach ( $meta as $key => $value ) {
+			if ( 0 === strpos( $key, 'content_cards_') ) {
+				$value = unserialize($value[0]);
+				if ( isset( $value['image_id'] ) && $image_id == $value['image_id'] )  {
+					$found = $key;
+					break;
+				}
+			}
+		}
+		if ( !$found ) {
+			wp_delete_attachment( $image_id, true );
+		}
+	}
+
+	public static function filter_cached_images( $args ) {
+		if ( !isset($args['meta_query'])) {
+			$args['meta_query'] = array();
+		}
+		$args['meta_query'][] = array(
+			'key' 		=> 'content_cards_cached',
+			'compare'	=> 'NOT EXISTS',
+		);
+		return $args;
+	}
+	public static function filter_cached_images_query( $query ) {
+		if ( !is_admin() ) {
+			return $query;
+		}
+		if (defined('DOING_AJAX') && DOING_AJAX) {
+			return $query;
+		}
+		if ( 'upload' !== get_current_screen()->base ) {
+			return $query;
+		}
+		$q = $query->get( 'meta_query' );
+		$q[] = array(
+			'key' 		=> 'content_cards_cached',
+			'compare'	=> 'NOT EXISTS',
+		);
+		$query->set( 'meta_query', $q );
+		return $query;
+	}
+	public static function filter_cached_images_count( $count ) {
+		$cached = 'image/cached';
+		$count->$cached = self::_count_cached() * -1;
+		return $count;
+	}
+	public static function filter_cached_images_orphans( $query ) {
+		global $wpdb;
+		if ( "SELECT COUNT( * ) FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_status != 'trash' AND post_parent < 1" == $query ) {
+			$count_cached = self::_count_cached();
+			$query = "SELECT COUNT( * ) - {$count_cached} FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_status != 'trash' AND post_parent < 1";
+		}
+		return $query;
+	}
+	private static function _count_cached() {
+		global $wpdb;
+		$q = "SELECT COUNT( * ) FROM {$wpdb->postmeta} WHERE meta_key='content_cards_cached'";
+		$q = $wpdb->get_var($q);
+		return $q;
+	}
+
+	private static function cache_image( $image_url, $post_id ) {
+		$temp_file = download_url( $image_url );
+		if ( !is_wp_error( $temp_file ) ) {
+			$allowed_mime_types = array( 
+				'image/jpeg',
+				'image/gif',
+				'image/png',
+				'image/bmp',
+				'image/tiff',
+				'image/x-icon',
+			);
+			$mime = self::_get_mime_type( $temp_file);
+			preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png|ico)/i', $image_url, $matches);
+			if ( in_array( $mime, $allowed_mime_types ) ) {
+				$file = array(
+					'name' => basename($matches[0]),
+					'type' => $mime,
+					'tmp_name' => $temp_file,
+					'error' => 0,
+					'size' => filesize($temp_file),
+				);			
+				$overrides = array(
+					'test_form' => false,
+					'test_size' => true,
+					'test_upload' => true,
+				);
+				$a = wp_check_filetype_and_ext($file['tmp_name'],$file['name'],false);
+				$movefile = wp_handle_sideload( $file, $overrides );
+				if ( $movefile && !isset( $movefile['error'] ) ) {
+					$wp_upload_dir = wp_upload_dir();
+					$attachment = array(
+						'guid'           => $wp_upload_dir['url'] . '/' . basename( $movefile['file'] ), 
+						'post_mime_type' => $movefile['type'],
+						'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $movefile['file'] ) ),
+						'post_content'   => '',
+						'post_status'    => 'inherit'
+					);
+					$attach_id = wp_insert_attachment( $attachment, $movefile['file'] );
+					require_once( ABSPATH . 'wp-admin/includes/image.php' );
+					$attach_data = wp_generate_attachment_metadata( $attach_id, $movefile['file'] );
+					wp_update_attachment_metadata( $attach_id, $attach_data );
+					$cached = array(
+						'post_id' => $post_id,
+						'original_url' => $image_url,
+					);
+					add_post_meta( $attach_id, 'content_cards_cached', $cached );
+					return $attach_id;
+				}
+			}
+		}
+		return false;
+	}
+	private static function _get_mime_type($file) {
+		$mtype = false;
+		if (function_exists('finfo_open')) {
+			$finfo = finfo_open(FILEINFO_MIME_TYPE);
+			$mtype = finfo_file($finfo, $file);
+			finfo_close($finfo);
+		} elseif (function_exists('mime_content_type')) {
+			$mtype = mime_content_type($file);
+		} 
+		return $mtype;
+	}
 
 	private static function get_remote_favicon( $html, $url ) {
 		$old_libxml_error = libxml_use_internal_errors(true);
@@ -715,4 +918,47 @@ function the_cc_data( $key, $sanitize = false ) {
  */
 function the_cc_target() {
 	echo Content_Cards::$temp_data['target'] ? ' target="_blank"' : '';
+}
+
+/**
+ * Returns cached image url or original image url, if cache is not available
+ *
+ * @param $size - WordPress image size
+ * @param $sanitize
+ */
+function get_cc_image( $size = 'thumbnail', $sanitize = false ) {
+	if ( isset(Content_Cards::$temp_data['image_id']) && Content_Cards::$temp_data['image_id'] ) {
+		$result = wp_get_attachment_image_src( Content_Cards::$temp_data['image_id'], $size );
+		$result = $result[0];
+		if (is_callable($sanitize)) {
+			$result = call_user_func( $sanitize, $result );
+		}
+		return $result;
+	} else if ( isset(Content_Cards::$temp_data['image']) && Content_Cards::$temp_data['image'] ) {
+		return get_cc_data( 'image', $sanitize );
+	} else {
+		return false;
+	}
+}
+
+/**
+ * Prints cached image original image, if cache is not available
+ *
+ * @param $size - WordPress image size
+ * @param $args
+ */
+function the_cc_image( $size = 'thumbnail', $args = array() ) {
+	$defaults = array(
+		'alt' => get_cc_data( 'title' ),
+	);
+	$args = wp_parse_args( $args, $defaults );
+	$attributes = array();
+	foreach ($args as $key => $value) {
+		$value = esc_attr( $value );
+		$attributes[] = "{$key}=\"{$value}\"";
+	}
+	$attributes = implode( ' ', $attributes );
+	$img = get_cc_image( $size, 'esc_url' );
+	$result = "<img src=\"{$img}\" {$attributes}>";
+	echo $result;
 }
