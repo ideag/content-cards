@@ -5,7 +5,7 @@ Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content 
 Donate link: http://arunas.co#coffee
 Requires at least: 4.2.0
 Tested up to: 4.3.0
-Stable tag: 0.9.0
+Stable tag: 0.9.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,11 +56,15 @@ All skin template files can be found in `content-cards/skins/*` directory and th
 
 Main skin template is `content-cards.php`. If no other skin templates are defined, Content Cards will fall back to this one, the same way WordPress falls back to `index.php`. If you want more granular templates, you can provide `content-cards-{$type}.php` templates, (`content-cards-website.php`, `content-cards-article.php`, etc.). `$type` is based on `og:type` meta data provided by website.
 
-Content Cards provides three new template tags: `get_cc_data()`, `the_cc_data()` and `the_cc_target()`:
+Content Cards provides five new template tags: `get_cc_data()`, `the_cc_data()` and `the_cc_target()`:
 
 * `get_cc_data( $key, $sanitize = false )` - **returns** `$key` OpenGraph data field (i.e. 'title', 'description', etc.). If valid `$sanitize` function is provided, the data is escaped using it.
 * `the_cc_data( $key, $sanitize = false )` - according to WordPress tradition, it **prints** the same data that `get_cc_data()` would return.
 * `the_cc_target()` - a special helper function, that prints ` target="_blank"` to links if needed (according to plugin/shortcode settings). Usage: `<a href=""<?php the_cc_target() ?>>`.
+* `get_cc_image( $size, $sanitize = false )` - *new in v0.9.1* - returns a link to image if there is one. Defaults to image, cached in Media Library, then to remote image. For cached images, you can use `$size` parameter to get specific WordPress image size.
+* `the_cc_image( $size, $attrs = array() )` - *new in v0.9.1* - prints an image tag. Uses `get_cc_images()`.
+
+Also since `v0.9.1` you can use `'favicon'` key in `get_cc_data()/the_cc_data()` to display favicon if the remote site provides one.
 
 == Installation ==
 
@@ -78,6 +82,16 @@ Content Cards provides three new template tags: `get_cc_data()`, `the_cc_data()`
 5. The Content Cards appearance on the official "Twenty" family of WordPress themes
 
 == Changelog ==
+
+= 0.9.1 =
+
+* New feature - Content Card images are now cached in Media Library.
+* Added `'favicon'` key to display site icon.
+* Content Cards' `max-width` limited to 600px via CSS. 
+* Added an option to limit how many words should be displayed in `'description'`.
+* Fixed a bug where non absolute URIs were provided for favicon and/or image in OG:data
+* Added an icon for TinyMCE editor button.
+* Shortcode loading screen now is configurable via Skins.
 
 = 0.9.0 =
 
