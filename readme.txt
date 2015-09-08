@@ -66,6 +66,10 @@ Content Cards provides five new template tags: `get_cc_data()`, `the_cc_data()` 
 
 Also since `v0.9.1` you can use `'favicon'` key in `get_cc_data()/the_cc_data()` to display favicon if the remote site provides one.
 
+= Requirements =
+
+This plugin requires WP_Cron to be in proper working order.
+
 == Installation ==
 
 * Go to your admin area and select Plugins -> Add new from the menu.
