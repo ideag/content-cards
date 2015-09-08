@@ -3,9 +3,9 @@
 Contributors: ideag, khromov
 Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content card
 Donate link: http://arunas.co#coffee
-Requires at least: 4.2.0
+Requires at least: 4.3.0
 Tested up to: 4.3.0
-Stable tag: 0.9.1
+Stable tag: 0.9.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,10 @@ This plugin requires WP_Cron to be in proper working order.
 5. The Content Cards appearance on the official "Twenty" family of WordPress themes
 
 == Changelog ==
+
+= 0.9.2 = 
+
+* fixes a bug where `wp-admin` became unaccessible due to 'undefined' `get_current_screen()` function
 
 = 0.9.1 =
 
