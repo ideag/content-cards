@@ -2,7 +2,7 @@
 /*
 Plugin Name: Content Cards
 Description: Embed any link from the web easily as a beautiful Content Card
-Version: 0.9.1
+Version: 0.9.2
 Author: Arūnas Liuiza
 Author URI: http://arunas.co
 License: GPL2
@@ -669,7 +669,7 @@ class Content_Cards {
 		if (defined('DOING_AJAX') && DOING_AJAX) {
 			return $query;
 		}
-		if ( 'upload' !== get_current_screen()->base ) {
+		if ( !function_exists('get_current_screen') || 'upload' !== get_current_screen()->base ) {
 			return $query;
 		}
 		$q = $query->get( 'meta_query' );
