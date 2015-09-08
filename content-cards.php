@@ -2,7 +2,7 @@
 /*
 Plugin Name: Content Cards
 Description: Embed any link from the web easily as a beautiful Content Card
-Version: 0.9.2
+Version: 0.9.3
 Author: Arūnas Liuiza
 Author URI: http://arunas.co
 License: GPL2
@@ -701,6 +701,9 @@ class Content_Cards {
 	}
 
 	private static function cache_image( $image_url, $post_id ) {
+		require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+		require_once(ABSPATH . "wp-admin" . '/includes/file.php');
+		require_once(ABSPATH . "wp-admin" . '/includes/media.php');
 		$temp_file = download_url( $image_url );
 		if ( !is_wp_error( $temp_file ) ) {
 			$allowed_mime_types = array( 
@@ -778,12 +781,20 @@ class Content_Cards {
                 break;
             }
         }
+        if ( !$favicon ) {
+	        $url_parts = parse_url( $url );
+	        $temp = "{$url_parts['scheme']}://{$url_parts['host']}/favicon.ico";
+	        $response = wp_remote_head($temp);
+	        if ( isset($response['headers']['content-type']) && 0 === strpos( $response['headers']['content-type'], 'image/' ) ) {
+	        	$favicon = $temp;
+	        } 
+        }
         $favicon = self::force_absolute_url( $favicon, $url );
         return $favicon;
 	}
 
 	private static function force_absolute_url( $url, $site_url ) {
-		if ( $url && !filter_var( $url, FILTER_VALIDATE_URL ) ) {
+		if ( $url && !filter_var( $url, FILTER_VALIDATE_URL ) && !filter_var( 'http:'.$url, FILTER_VALIDATE_URL ) ) {
 			$url_parts = parse_url($site_url);
     		$site_url = $url_parts['scheme'] . "://" . $url_parts['host'] . "/";
     		if ( 0 !== strpos( $url, '/' ) ) {

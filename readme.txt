@@ -5,7 +5,7 @@ Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content 
 Donate link: http://arunas.co#coffee
 Requires at least: 4.3.0
 Tested up to: 4.3.0
-Stable tag: 0.9.2
+Stable tag: 0.9.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,12 @@ This plugin requires WP_Cron to be in proper working order.
 5. The Content Cards appearance on the official "Twenty" family of WordPress themes
 
 == Changelog ==
+
+= 0.9.3 = 
+
+* bugfix 'undefined' `download_url()` function.
+* bugfix `force_absolute_url()` method to work correctly with protocol-agnostic (//domain.com) URIs.
+* enhanced favicon detection mechanism.
 
 = 0.9.2 = 
 
