@@ -3,7 +3,7 @@
 Contributors: ideag, khromov
 Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content card
 Donate link: http://arunas.co#coffee
-Requires at least: 4.3.0
+Requires at least: 4.1.0
 Tested up to: 4.3.0
 Stable tag: 0.9.3
 License: GPLv2
