@@ -269,7 +269,7 @@ class Content_Cards {
 						'args' => array (
 							'button_text' 			=> __( 'Upload Image', 'content-cards' ),
 							'uploader_button_text' 	=> __( 'Select File', 'content-cards' ),
-							'description' 			=> __( 'Placeholder image for Content Cards.', 'content-cards' ),
+							'description' 			=> __( 'Placeholder image for links that do not have OpenGraph data. (Leave empty to use default image set by skin.)', 'content-cards' ),
 						),
 						'callback' => 'file',
 					),
