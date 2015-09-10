@@ -72,6 +72,30 @@ Also since `v0.9.1` you can use `'favicon'` key in `get_cc_data()/the_cc_data()`
 
 This plugin requires WP_Cron to be in proper working order.
 
+= Override the default options =
+
+If you are running this plugin on a multisite, you may wish to set site-wide settings and disable the Content Cards settings page on each separate blog.
+
+To do this, you can use the `content_cards_options` hook, like this:
+
+    add_filter('content_cards_options', function($data) {
+
+        //Disable admin page
+        $data['enable_admin_page'] = false;
+
+        return $data;
+    });
+
+You can also override a number of other options using this hook. For example, here we set the theme to "default-dark":
+
+    add_filter('content_cards_options', function($data) {
+
+        //Disable admin page
+        $data['skin'] = 'default-dark';
+
+        return $data;
+    });
+
 == Installation ==
 
 * Go to your admin area and select Plugins -> Add new from the menu.
