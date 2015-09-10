@@ -932,6 +932,13 @@ function the_cc_target() {
 }
 
 /**
+ * Add in filterable CSS classes
+ */
+function the_cc_css_classes() {
+	echo implode(" ", apply_filters('content_cards_css_classes', array('content_cards_card')));
+}
+
+/**
  * Returns cached image url or original image url, if cache is not available
  *
  * @param $size - WordPress image size
