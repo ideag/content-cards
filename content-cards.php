@@ -717,8 +717,15 @@ class Content_Cards {
 			$mime = self::_get_mime_type( $temp_file);
 			preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png|ico)/i', $image_url, $matches);
 			if ( in_array( $mime, $allowed_mime_types ) ) {
+				$filename = basename( $matches[0] );
+				$filename = urldecode( $filename );
+				$filename = explode( '.', $filename );
+				foreach ($filename as $key => $value) {
+					$filename[ $key ] = sanitize_title( $value );
+				}
+				$filename = implode( '.', $filename );
 				$file = array(
-					'name' => basename($matches[0]),
+					'name' => $filename,
 					'type' => $mime,
 					'tmp_name' => $temp_file,
 					'error' => 0,
