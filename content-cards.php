@@ -391,7 +391,11 @@ class Content_Cards {
 		} else {
 			$target = null;
 		}
-		$result = self::build( $args['url'], $target, !is_admin() );
+		$class = null;
+		if ( isset( $args['class'] ) && $args['class'] ) {
+			$class = $args['class'];
+		}
+		$result = self::build( $args['url'], $target, !is_admin(), $class );
 		return $result;
 	}
 
@@ -403,7 +407,7 @@ class Content_Cards {
 	 * @param null $target
 	 * @return string
 	 */
-	public static function build( $url, $target = null, $fallback = false ) {
+	public static function build( $url, $target = null, $fallback = false, $class = null ) {
 		if ( null === $target ) {
 			$target = self::$options['target'];
 		}
@@ -420,6 +424,7 @@ class Content_Cards {
 		$data['description'] = wpautop(isset($data['description'])?$data['description']:'');
 		$data['url'] = $url;
 		$data['target'] = $target;
+		$data['css_class'] = $class;
 		$type = isset( $data['type'] ) ? $data['type'] : 'website';
 		$data = apply_filters( 'content_cards_data', $data, $url );
 		self::$temp_data = $data;
@@ -880,6 +885,7 @@ class Content_Cards {
     			'link_label' 		=> __( 'Content Card URI', 'content-cards' ),
     			'target_label' 		=> __( 'Target', 'content-cards' ),
     			'target_text' 		=> __( 'Open Link in New Tab', 'content-cards' ),
+    			'class_label' 		=> __( 'CSS classes (optional)', 'content-cards' ),
     			'link_dialog_title' => __( 'Edit Content Card', 'content-cards' ),
     			'add_dialog_title'  => __( 'Add Content Card', 'content-cards' ),
 				'loading_image_heading' => __( 'This Content Card is still processing', 'content-cards' ),
@@ -935,9 +941,12 @@ function the_cc_target() {
  * Add in filterable CSS classes
  */
 function the_cc_css_classes( $classes = array( 'content_cards_card' ) ) {
+	$temp_class = Content_Cards::$temp_data['css_class'];
+	$temp_class = explode( ' ', $temp_class );
 	if ( !is_array( $classes ) ) {
 		$classes = explode( ' ', $classes );
 	}
+	$classes = array_merge( $temp_class, $classes );
 	$classes = apply_filters('content_cards_css_classes', $classes );
 	echo implode(" ", $classes );
 }

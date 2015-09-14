@@ -16,9 +16,14 @@
                         label: contentcards.texts.target_label,
                         text: contentcards.texts.target_text,
                         checked:false
+                    },
+                    {
+                        type: 'textbox',
+                        name: 'class',
+                        label: contentcards.texts.class_label,
                     }],
                     onsubmit: function( e ) {
-                        editor.insertContent( '[contentcards url="' + e.data.uri + '"' + ( e.data.target ? ' target="_blank"' : '' )+'] ' );
+                        editor.insertContent( '[contentcards url="' + e.data.uri + '"' + ( e.data.target ? ' target="_blank"' : '' ) + ( e.data.class ? ' class="' + e.data.class + '"' : '' ) + '] ' );
                     }
                 } );
             }

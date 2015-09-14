@@ -50,9 +50,15 @@
                         text: contentcards.texts.target_text,
 	                    checked: values['target']?true:false
                     },
+                    {
+                        type: 'textbox',
+                        name: 'class',
+                        label: contentcards.texts.class_label,
+	                    value: values['class']
+                    },
                 ],
                 onsubmit: function(e){
-                	var s = '[contentcards url="' + e.data.url + '"' + ( e.data.target ? ' target="_blank"' : '' )+']'
+                	var s = '[contentcards url="' + e.data.url + '"' + ( e.data.target ? ' target="_blank"' : '' ) + ( e.data.class ? ' class="' + e.data.class + '"' : '' ) + ']'
 				    tinyMCE.activeEditor.insertContent( s );
                 }
             } );
