@@ -65,17 +65,22 @@ Content Cards provides five new template tags: `get_cc_data()`, `the_cc_data()` 
 * `the_cc_target()` - a special helper function, that prints ` target="_blank"` to links if needed (according to plugin/shortcode settings). Usage: `<a href=""<?php the_cc_target() ?>>`.
 * `get_cc_image( $size, $sanitize = false )` - *new in v0.9.1* - returns a link to image if there is one. Defaults to image, cached in Media Library, then to remote image. For cached images, you can use `$size` parameter to get specific WordPress image size.
 * `the_cc_image( $size, $attrs = array() )` - *new in v0.9.1* - prints an image tag. Uses `get_cc_images()`.
+* `the_cc_css_classes( $classes )` - *new in v0.9.4* - a filterable template tag to print out CSS classes for the main div of Content Card. Custom CSS classes can also be passed via `class` attribute in the shortcode 
 
 Also since `v0.9.1` you can use `'favicon'` key in `get_cc_data()/the_cc_data()` to display favicon if the remote site provides one.
 
 = Adding CSS classes to the content card container
 
-Adding a class is easy thanks to the `content_cards_css_classes` filter.
+**Filter** Adding a class is easy thanks to the `content_cards_css_classes` filter.
 
     add_filter('content_cards_css_classes', function($classes) {
         $classes[] = 'my_class';
         return $classes;
     });
+
+**Shortcode** You can also add custom CSS classes on card-by-card basis using `class` attribute in the shortcode:
+
+`[contentcards url="http://arunas.co" class="my_class"]`
 
 = Requirements =
 
