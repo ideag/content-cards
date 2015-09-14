@@ -934,8 +934,12 @@ function the_cc_target() {
 /**
  * Add in filterable CSS classes
  */
-function the_cc_css_classes() {
-	echo implode(" ", apply_filters('content_cards_css_classes', array('content_cards_card')));
+function the_cc_css_classes( $classes = array( 'content_cards_card' ) ) {
+	if ( !is_array( $classes ) ) {
+		$classes = explode( ' ', $classes );
+	}
+	$classes = apply_filters('content_cards_css_classes', $classes );
+	echo implode(" ", $classes );
 }
 
 /**
