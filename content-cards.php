@@ -563,7 +563,7 @@ class Content_Cards {
 		$result = array();
 		if ( $data ) {
 			$graph = OpenGraph::parse( $data );
-			if ( sizeof( $graph ) > 0 ) {
+			if ( is_array( $graph ) > 0 ) {
 				foreach ($graph as $key => $value) {
 				    $result[$key] = $value;
 				}				
@@ -594,6 +594,7 @@ class Content_Cards {
 				}
 			}
 			$result['cc_last_updated'] = time();
+			
 			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
 				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
 			}
@@ -813,16 +814,27 @@ class Content_Cards {
 	private static function get_remote_data_fallback( $data ) {
 		$result = array();
 
+		$title = false;
+		$description = false;
+
 		$old_libxml_error = libxml_use_internal_errors(true);
 		$doc = new DOMDocument;
 		$doc->loadHTML( $data );
 		libxml_use_internal_errors($old_libxml_error);
 
-		$title = $doc->getElementsByTagName( 'title' );
-		$title = $title[0];
+
+
+		$title_dom = $doc->getElementsByTagName( 'title' );
+		if(isset($title_dom[0])) {
+			$title = $title_dom[0]->textContent;
+		};
 
 		$xpath = new DOMXPath($doc);
-		$description = $xpath->query('//meta[@name="description"]/@content');
+		$description_dom = $xpath->query('//meta[@name="description"]/@content');
+
+		if(isset($description_dom[0])) {
+			$description = $description_dom[0]->value;
+		}
 
 		if ( $title && $description ) {
 			$result = array(
