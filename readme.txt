@@ -17,7 +17,7 @@ Content Cards make ordinary web links great by making it possible to embed a bea
 
 By using OpenGraph data, Content Cards grabs the title, description and associated image to the links you embed - it's similar to how you can embed other websites, such as YouTube, Twitter, SoundCloud and more.
 
-For individual links, You can insert a Content Card via shortcode `[contentcards url="http://yoursite.com/article-1"]`. If you often use Content Cards for some website, you can register the domain name (for example: `yoursite.com`) as an oEmbed provider via Plugin's Settings page and then it will behave the same way other oEmbed providers do - you will just have to paste plaintext link to a separate paragraph an Content Card will be generated automatically.
+For individual links, You can insert a Content Card via shortcode: `[contentcards url="http://yoursite.com/article-1"]`. If you often use Content Cards for a particular website, you can register the domain name (for example: `yoursite.com`) as an oEmbed provider via the Content Cards plugin Settings page and then it will behave the same way other oEmbed providers do - you will just have to paste a plaintext link in a separate paragraph and a Content Card will be generated automatically.
 
 This plugin was built by [Arūnas Liuiza](http://arunas.co) and [Stanislav Khromov](http://snippets.khromov.se/). It is being developed on [GitHub](http://github.com/ideag/content-cards). If you have any questions, issues, need support, or want to contribute, please let us know [here](http://github.com/ideag/content-cards/issues).
 
@@ -30,11 +30,12 @@ Also, please check out our other plugins:
 
 == Frequently Asked Questions ==
 
-There are two ways of inserting Content Cards into WordPress posts - shortcode and oEmbed.
+There are two ways of inserting Content Cards into WordPress posts - shortcode or oEmbed.
 
 = Shortcode =
 
-Shortcode is the simplest way - You just put `[contentcards url="http://yourdomain.com/article/1"]` into your post content and it gets replaced with a content card.
+Using a shortcode is the simplest way - simply put the shortcode `[contentcards url="http://yourdomain.com/article/1"]` into your post content and it gets replaced with a content card.
+
 The shortcode accepts two attributes:
 
 * `url` (requried) - link to the site you want to display Content Card for.
@@ -44,21 +45,21 @@ You can also insert the shortcode via a button in your visual editor. Start by p
 
 = oEmbed = 
 
-If You find that you are adding a lot of Content Cards from some single domain, You can save yourself some work, by white-listing that website as oEmbed provider in Content Card Settings page.
+If you find that you are adding a lot of Content Cards from some single domain, you can save yourself some work, by white-listing that website as oEmbed provider in Content Card Settings page.
 
-White-listed sites work the same way any other oEmbed provider in WordPress (YouTube, Twitter, SoundCloud, etc.) - You just need to put a plaintext link in a separate line in the WordPress editor and it will be replaced with a Content Card.
+White-listed sites work the same way any other oEmbed provider in WordPress (YouTube, Twitter, SoundCloud, etc.) - you simply need to put a plaintext link on a separate line in the WordPress editor and it will be replaced with a Content Card. 
 
-In Content Cards Settings page you can provide a list of white-listed sites. Put only domain name (`example.com`), one domain per line.
+In Content Cards Settings page you can provide a list of white-listed sites. Input the domain name (i.e. `example.com`), one domain per line.
 
 = Skins = 
 
-Content Cards come with two default skins - `Default` and `Default Dark` - created by Stanislav Khromov. These skins are designed to provide minimal structural styling and blend in nicely with active theme by inheriting the font from the theme.
+Content Cards come with two default skins - `Default` and `Default Dark` - created by Stanislav Khromov. These skins are designed to provide minimal structural styling and blend in nicely with active theme by inheriting the font styles from the theme.
 
-All skin template files can be found in `content-cards/skins/*` directory and they can be overwritten by providing the same template in active theme. For example, if you want to overwrite Content Cards stylesheet, You should add `content-cards.css` to Your theme directory.
+All skin template files can be found in the `content-cards/skins/` directory and they can be overwritten by creating a template with the same name in the currently active theme. For example, if you want to overwrite the Content Cards stylesheet, you should add `content-cards.css` to your theme directory.
 
-Main skin template is `content-cards.php`. If no other skin templates are defined, Content Cards will fall back to this one, the same way WordPress falls back to `index.php`. If you want more granular templates, you can provide `content-cards-{$type}.php` templates, (`content-cards-website.php`, `content-cards-article.php`, etc.). `$type` is based on `og:type` meta data provided by website.
+the main skin template is `content-cards.php`. If no other skin templates are defined, Content Cards will fall back to this one, the same way WordPress falls back to the `index.php` template. If you want more granular templates, you can provide `content-cards-{$type}.php` templates, (`content-cards-website.php`, `content-cards-article.php`, etc.). The `$type` variable is based on the `og:type` tag provided by the website.
 
-Content Cards provides five new template tags: `get_cc_data()`, `the_cc_data()` and `the_cc_target()`:
+Content Cards provides five template tags which are usable in the template files:
 
 * `get_cc_data( $key, $sanitize = false )` - **returns** `$key` OpenGraph data field (i.e. 'title', 'description', etc.). If valid `$sanitize` function is provided, the data is escaped using it.
 * `the_cc_data( $key, $sanitize = false )` - according to WordPress tradition, it **prints** the same data that `get_cc_data()` would return.
@@ -66,11 +67,11 @@ Content Cards provides five new template tags: `get_cc_data()`, `the_cc_data()` 
 * `get_cc_image( $size, $sanitize = false )` - *new in v0.9.1* - returns a link to image if there is one. Defaults to image, cached in Media Library, then to remote image. For cached images, you can use `$size` parameter to get specific WordPress image size.
 * `the_cc_image( $size, $attrs = array() )` - *new in v0.9.1* - prints an image tag. Uses `get_cc_images()`.
 
-Also since `v0.9.1` you can use `'favicon'` key in `get_cc_data()/the_cc_data()` to display favicon if the remote site provides one.
+Since `v0.9.1` you can use `'favicon'` key in `get_cc_data()/the_cc_data()` to display favicon if the remote site provides one.
 
 = Requirements =
 
-This plugin requires WP_Cron to be in proper working order.
+This plugin requires WordPress Cron to be in proper working order.
 
 = Override the default options =
 
