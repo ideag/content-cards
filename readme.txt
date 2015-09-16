@@ -57,7 +57,7 @@ Content Cards come with two default skins - `Default` and `Default Dark` - creat
 
 All skin template files can be found in the `content-cards/skins/` directory and they can be overwritten by creating a template with the same name in the currently active theme. For example, if you want to overwrite the Content Cards stylesheet, you should add `content-cards.css` to your theme directory.
 
-the main skin template is `content-cards.php`. If no other skin templates are defined, Content Cards will fall back to this one, the same way WordPress falls back to the `index.php` template. If you want more granular templates, you can provide `content-cards-{$type}.php` templates, (`content-cards-website.php`, `content-cards-article.php`, etc.). The `$type` variable is based on the `og:type` tag provided by the website.
+The main skin template is `content-cards.php`. If no other skin templates are defined, Content Cards will fall back to this one, the same way WordPress falls back to the `index.php` template. If you want more granular templates, you can provide `content-cards-{$type}.php` templates, (`content-cards-website.php`, `content-cards-article.php`, etc.). The `$type` variable is based on the `og:type` tag provided by the website.
 
 Content Cards provides five template tags which are usable in the template files:
 
