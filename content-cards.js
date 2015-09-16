@@ -34,26 +34,55 @@
 		edit: function( data, update ) {
 	    	var shortcode_data = wp.shortcode.next('contentcards', data);
 		    var values = shortcode_data.shortcode.attrs.named;
-		    tinyMCE.activeEditor.windowManager.open({
+		    var win = tinyMCE.activeEditor.windowManager.open({
                 title: contentcards.texts.link_dialog_title,
-                body: [
-                    {
+                data: values,
+                bodyType: 'tabpanel',
+                body: [{
+                    type: 'form',
+                    title: contentcards.texts.main_label,
+                    items: [{
                         type: 'textbox',
                         name: 'url',
                         label: contentcards.texts.link_label,
-	                    value: values['url']
                     },
                     {
                         type: 'checkbox',
                         name: 'target',
                         label: contentcards.texts.target_label,
                         text: contentcards.texts.target_text,
-	                    checked: values['target']?true:false
-                    },
-                ],
+                        checked:false
+                    }
+                    ],
+                },{
+                    type: 'form',
+                    title: contentcards.texts.advanced_label,
+                    items: [{
+                        type: 'textbox',
+                        name: 'class',
+                        label: contentcards.texts.class_label,
+                    },{
+                        type: 'textbox',
+                        name: 'word_limit',
+                        label: contentcards.texts.wordlimit_label,
+                    }
+                    ],
+                }],
                 onsubmit: function(e){
-                	var s = '[contentcards url="' + e.data.url + '"' + ( e.data.target ? ' target="_blank"' : '' )+']'
-				    tinyMCE.activeEditor.insertContent( s );
+                    var result = win.toJSON();
+                    var atts = ''; 
+                    for ( var key in result ) {
+                        if ( !result[key] ) {
+                            continue;
+                        }
+                        if ( 'target' === key ) {
+                            result[key] = '_blank';
+                        }
+                        atts += ' ' + key  + '="' + result[key] + '"';
+                    }
+                    tinyMCE.activeEditor.insertContent( '[contentcards' + atts + '] ' );
+        //         	var s = '[contentcards url="' + e.data.url + '"' + ( e.data.target ? ' target="_blank"' : '' ) + ( e.data.class ? ' class="' + e.data.class + '"' : '' ) + ']'
+				    // tinyMCE.activeEditor.insertContent( s );
                 }
             } );
 		}
