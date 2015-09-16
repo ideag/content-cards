@@ -23,6 +23,7 @@ class Content_Cards {
 		'update_interval' => DAY_IN_SECONDS,
 		'cleanup_interval' => DAY_IN_SECONDS,
 		'default_image' => '',
+		'cache_images' => true,
 		'word_limit' => 55,
 		'enable_admin_page' => true
 	);
@@ -277,6 +278,13 @@ class Content_Cards {
 							'description' 			=> __( 'Placeholder image for links that do not have OpenGraph data. (Leave empty to use default image set by skin.)', 'content-cards' ),
 						),
 						'callback' => 'file',
+					),
+					'cache_images' => array(
+						'title'=> __( 'Cache Images', 'content-cards' ),
+						'args' => array (
+							'label'			=> __( 'Should Content Cards cache images to Media Library?', 'content-cards' ),
+						),
+						'callback' => 'checkbox',
 					),
 					'word_limit' => array(
 						'title'=> __('Word Limit','content-cards'),
@@ -586,7 +594,7 @@ class Content_Cards {
 						unset( $result['image_id'] );
 					}
 				}
-			    if ( !isset( $result['image_id'] ) || !$result['image_id'] ) {
+			    if ( self::$options['cache_images'] && ( !isset( $result['image_id'] ) || !$result['image_id'] ) ) {
 					$image_id = self::cache_image( $result['image'], $post_id );
 					if ( $image_id ) {
 						$result['image_id'] = $image_id;
