@@ -24,6 +24,7 @@ class Content_Cards {
 		'cleanup_interval' => DAY_IN_SECONDS,
 		'default_image' => '',
 		'word_limit' => 55,
+		'enable_admin_page' => true
 	);
 	private static $stylesheet = '';
 	public static $temp_data = array();
@@ -31,7 +32,7 @@ class Content_Cards {
 	public static function init() {
 		$options = get_option( 'content-cards_options' );
 
-		self::$options = wp_parse_args( $options, self::$options );
+		self::$options = apply_filters('content_cards_options', wp_parse_args( $options, self::$options ));
 
 		if ( isset( self::$options['theme'] ) ) {
 			self::$options['skin'] = self::$options['theme'];
@@ -41,7 +42,11 @@ class Content_Cards {
 		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
 		add_action( 'admin_enqueue_scripts',array( 'Content_Cards', 'admin_scripts' ) );
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
-		add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
+
+		if(self::$options['enable_admin_page']) {
+			add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
+		}
+
 		add_action( 'content_cards_update', array( 'Content_Cards', 'update_data' ), 10, 3 );
 		add_action( 'content_cards_retry',  array( 'Content_Cards', 'retry_data' ), 10, 4 );
 
@@ -558,7 +563,7 @@ class Content_Cards {
 		$result = array();
 		if ( $data ) {
 			$graph = OpenGraph::parse( $data );
-			if ( sizeof( $graph ) > 0 ) {
+			if ( is_array( $graph ) > 0 ) {
 				foreach ($graph as $key => $value) {
 				    $result[$key] = $value;
 				}				
@@ -589,6 +594,7 @@ class Content_Cards {
 				}
 			}
 			$result['cc_last_updated'] = time();
+			
 			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
 				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
 			}
@@ -815,16 +821,27 @@ class Content_Cards {
 	private static function get_remote_data_fallback( $data ) {
 		$result = array();
 
+		$title = false;
+		$description = false;
+
 		$old_libxml_error = libxml_use_internal_errors(true);
 		$doc = new DOMDocument;
 		$doc->loadHTML( $data );
 		libxml_use_internal_errors($old_libxml_error);
 
-		$title = $doc->getElementsByTagName( 'title' );
-		$title = $title[0];
+
+
+		$title_dom = $doc->getElementsByTagName( 'title' );
+		if(isset($title_dom[0])) {
+			$title = $title_dom[0]->textContent;
+		};
 
 		$xpath = new DOMXPath($doc);
-		$description = $xpath->query('//meta[@name="description"]/@content');
+		$description_dom = $xpath->query('//meta[@name="description"]/@content');
+
+		if(isset($description_dom[0])) {
+			$description = $description_dom[0]->value;
+		}
 
 		if ( $title && $description ) {
 			$result = array(
