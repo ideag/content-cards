@@ -386,16 +386,7 @@ class Content_Cards {
 		if ( !isset( $args['url'] ) ) {
 			return $result;
 		}
-		if ( isset( $args['target'] ) &&  in_array( $args['target'], array( true, 'true', 'blank', '_blank' ) ) ) {
-			$target = true;
-		} else {
-			$target = null;
-		}
-		$class = null;
-		if ( isset( $args['class'] ) && $args['class'] ) {
-			$class = $args['class'];
-		}
-		$result = self::build( $args['url'], $target, !is_admin(), $class );
+		$result = self::build( $args['url'], $args, !is_admin() );
 		return $result;
 	}
 
@@ -407,15 +398,20 @@ class Content_Cards {
 	 * @param null $target
 	 * @return string
 	 */
-	public static function build( $url, $target = null, $fallback = false, $class = null ) {
-		if ( null === $target ) {
-			$target = self::$options['target'];
-		}
+	public static function build( $url, $args = array(), $fallback = false ) {
+		$default = array(
+			'url' 			=> $url,
+			'target'		=> self::$options['target'],
+			'word_limit'	=> self::$options['word_limit'],
+			'class'			=> '',
+		);
+		$args = wp_parse_args( $args, $default );
+		$args = apply_filters( 'content_cards_args', $args, $url );
 		$data = self::get_data( $url );
 		if ( !$data ) {
 			$result = '';
 			if ( $fallback ) {
-				$target = $target ? ' target="_blank"' : "";
+				$target = $args['target'] ? ' target="_blank"' : "";
 				$domain = parse_url( $url, PHP_URL_HOST );
 				$result = wpautop( "<a href=\"{$url}\"{$target}>{$domain}</a>" );
 			}
@@ -423,8 +419,8 @@ class Content_Cards {
 		}
 		$data['description'] = wpautop(isset($data['description'])?$data['description']:'');
 		$data['url'] = $url;
-		$data['target'] = $target;
-		$data['css_class'] = $class;
+		$data['target'] = $args['target'];
+		$data['css_class'] = $args['class'];
 		$type = isset( $data['type'] ) ? $data['type'] : 'website';
 		$data = apply_filters( 'content_cards_data', $data, $url );
 		self::$temp_data = $data;
