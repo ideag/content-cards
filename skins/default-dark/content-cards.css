@@ -31,6 +31,9 @@ Author: khromov
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
+	
+	max-width: 100%;
+	height: auto;
 }
 
 /* Making this a bit more specific to make it harder for themes to override it */
