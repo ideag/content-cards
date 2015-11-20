@@ -10,6 +10,7 @@ License: GPL2
 
 add_action( 'plugins_loaded', array( 'Content_Cards', 'init' ) );
 register_uninstall_hook( __FILE__, array( 'Content_Cards', 'uninstall' ) );
+register_deactivation_hook( __FILE__, array( 'Content_Cards', 'deactivate' ) );
 /**
  * Main plugin class
  *
@@ -82,16 +83,22 @@ class Content_Cards {
 	    // shortcode preview
 		add_action( 'admin_init', 						array( 'Content_Cards', 'init_preview' ), 20 );
 		add_action( 'wp_ajax_content_cards_shortcode', 	array( 'Content_Cards', 'ajax_shortcode' ), 20 );
-
 	}
 
 	public static function uninstall() {
 		global $wpdb;
+		self::_delete_cached();
 		$q = "DELETE FROM `{$wpdb->postmeta}` WHERE `meta_key` LIKE 'content_cards_%'";
 		$wpdb->query( $q );
 		delete_option( 'content-cards_options' );
 		wp_cache_flush();
 	}
+
+	public static function deactivate() {
+		self::_delete_cached();
+		wp_cache_flush();
+	}
+
 	/**
 	 * Enqueues TinyMCE button JS
 	 *
@@ -713,6 +720,14 @@ class Content_Cards {
 		$q = "SELECT COUNT( * ) FROM {$wpdb->postmeta} WHERE meta_key='content_cards_cached'";
 		$q = $wpdb->get_var($q);
 		return $q;
+	}
+	private static function _delete_cached() {
+		global $wpdb;
+		$q = "SELECT `post_id` FROM {$wpdb->postmeta} WHERE meta_key='content_cards_cached'";
+		$q = $wpdb->get_col($q);
+		foreach ($q as $attachment_id) {
+			wp_delete_attachment( $attachment_id, true );
+		}
 	}
 
 	private static function cache_image( $image_url, $post_id ) {
