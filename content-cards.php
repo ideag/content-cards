@@ -96,7 +96,6 @@ class Content_Cards {
 
 	public static function deactivate() {
 		self::_delete_cached();
-		wp_cache_flush();
 	}
 
 	/**
