@@ -4,8 +4,8 @@ Contributors: ideag, khromov
 Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content card
 Donate link: http://arunas.co#coffee
 Requires at least: 4.1.0
-Tested up to: 4.3.0
-Stable tag: 0.9.3
+Tested up to: 4.4.0
+Stable tag: 0.9.4
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,13 @@ You can also override a number of other options using this hook. For example, he
 5. The Content Cards appearance on the official "Twenty" family of WordPress themes
 
 == Changelog ==
+
+= 0.9.4 =
+
+* bugfix - WordPress 4.4 breaks relative requires/includes, so converted them to absolute ones
+* enhanced OpenGrahp image detection - uses first image if more than one is available
+* cached images are now removed on plugin deactivation/removal
+* added a toggle to disable local image cacheing
 
 = 0.9.3 = 
 
