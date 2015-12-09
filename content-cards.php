@@ -572,7 +572,7 @@ class Content_Cards {
 		$result = array();
 		if ( $data ) {
 			$graph = OpenGraph::parse( $data );
-			if ( is_array( $graph ) > 0 ) {
+			if ( $graph ) {
 				foreach ($graph as $key => $value) {
 				    $result[$key] = $value;
 				}				
@@ -841,15 +841,15 @@ class Content_Cards {
 
 
 		$title_dom = $doc->getElementsByTagName( 'title' );
-		if(isset($title_dom[0])) {
-			$title = $title_dom[0]->textContent;
+		if( $title_dom->item(0) ) {
+			$title = $title_dom->item(0)->textContent;
 		};
 
 		$xpath = new DOMXPath($doc);
 		$description_dom = $xpath->query('//meta[@name="description"]/@content');
 
-		if(isset($description_dom[0])) {
-			$description = $description_dom[0]->value;
+		if($description_dom->item(0)) {
+			$description = $description_dom->item(0)->value;
 		}
 
 		if ( $title && $description ) {
