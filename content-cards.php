@@ -29,9 +29,11 @@ class Content_Cards {
 		'enable_admin_page' => true
 	);
 	private static $stylesheet = '';
+	public static $plugin_dir;
 	public static $temp_data = array();
 
 	public static function init() {
+		self::$plugin_dir = plugin_dir_path( __FILE__ );
 		$options = get_option( 'content-cards_options' );
 
 		self::$options = apply_filters('content_cards_options', wp_parse_args( $options, self::$options ));
@@ -232,7 +234,7 @@ class Content_Cards {
 	 * Creates admin menu
 	 */
 	public static function admin_menu() {
-		require_once ( 'includes/options.php' );
+		require_once ( self::$plugin_dir . 'includes/options.php' );
 		$fields =   array(
 			"general" => array(
 				'title' => '',
@@ -572,7 +574,7 @@ class Content_Cards {
 	 * @return array|mixed
 	 */
 	private static function get_remote_data( $url, $post_id ) {
-		require_once( 'includes/opengraph.php' );
+		require_once( self::$plugin_dir . 'includes/opengraph.php' );
 		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
 		$data = mb_convert_encoding($data, 'HTML-ENTITIES', 'UTF-8');
 		$result = array();
