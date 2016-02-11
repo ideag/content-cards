@@ -5,7 +5,7 @@ Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content 
 Donate link: http://arunas.co#coffee
 Requires at least: 4.1.0
 Tested up to: 4.4
-Stable tag: 0.9.4
+Stable tag: 0.9.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,12 +127,16 @@ You can also override a number of other options using this hook. For example, he
 
 == Changelog ==
 
+= 0.9.5 =
+
+* improved handling of non UTF-8 encoded websites
+
 = 0.9.4 =
 
 * bugfix - WordPress 4.4 breaks relative requires/includes, so converted them to absolute ones
 * enhanced OpenGrahp image detection - uses first image if more than one is available
 * cached images are now removed on plugin deactivation/removal
-* added a toggle to disable local image cacheing
+* added a toggle to disable local image caching
 
 = 0.9.3 = 
 
