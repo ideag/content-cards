@@ -4,7 +4,7 @@ Contributors: ideag, khromov
 Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content card
 Donate link: http://arunas.co#coffee
 Requires at least: 4.1.0
-Tested up to: 4.4
+Tested up to: 4.6
 Stable tag: 0.9.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
