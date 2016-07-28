@@ -54,8 +54,6 @@ class Content_Cards {
 		add_action( 'content_cards_retry',  array( 'Content_Cards', 'retry_data' ), 10, 4 );
 
 		add_action( 'content_cards_link_cleanup', array( 'Content_Cards', 'link_cleanup' ), 10, 1 );
-		add_action( 'content_cards_image_cleanup', array( 'Content_Cards', 'image_cleanup' ), 10, 1 );
-
 
 		add_shortcode( 'contentcard', 		array( 'Content_Cards', 'shortcode' ) );
 		add_shortcode( 'opengraph', 		array( 'Content_Cards', 'shortcode' ) );
@@ -209,6 +207,43 @@ class Content_Cards {
 
 		/* Stylesheet for loading indicator */
 		add_editor_style( self::get_editor_stylesheet() );
+
+		/* Endpoint for purging cache and other tasks */
+		self::register_endpoints();
+	}
+
+	/**
+	 * Registers endpoints for various clickable buttons.
+	 */
+	public static function register_endpoints() {
+		//We're in admin
+		if(is_admin() && current_user_can('manage_options') && isset($_GET['cc_nonce'])) {
+
+			//Purge links action
+			if(wp_verify_nonce( isset($_GET['cc_nonce']) ? $_GET['cc_nonce'] : '', 'cc-purge-links')) {
+
+			}
+			//Purge images action
+			else if(wp_verify_nonce( isset($_GET['cc_nonce']) ? $_GET['cc_nonce'] : '', 'cc-purge-images')) {
+
+			}
+			else {
+				wp_nonce_ays( 'cc' );
+			}
+
+
+			//Is the GET variable set?
+			if(isset($_GET['aljm_select_plugin'])) {
+				$new_option = ($_GET['aljm_select_plugin'] === '_none' ? '' : $_GET['aljm_select_plugin']);
+				update_option('aljm_current_plugin', $new_option);
+				if(isset($_GET['aljm_return_url'])) {
+					wp_redirect(urldecode($_GET['aljm_return_url']));
+				}
+				else {
+					wp_redirect(admin_url());
+				}
+			}
+		}
 	}
 
 	/**
@@ -594,6 +629,30 @@ class Content_Cards {
 				}						
 			}
 		}
+	}
+
+	/**
+	 * Immediately purge all links
+	 */
+	public static function link_purge() {
+		$query = new WP_Query(array(
+			'posts_per_page' => -1,
+			'post_status' => 'any',
+			'post_type' => 'any',
+			'fields' => 'ids',
+		));
+
+		foreach($query->posts as $post) {
+			var_dump($post);
+		}
+	}
+
+	/**
+	 * Immediately purge all cached images.
+	 * Used for move from 0.9.5 to 0.9.6
+	 */
+	public static function purge_images() {
+
 	}
 
 	private static function get_remote_favicon( $html, $url ) {
