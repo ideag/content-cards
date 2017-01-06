@@ -167,8 +167,11 @@ class Content_Cards {
 	 * @param string $type
 	 * @return mixed|string|void
 	 */
-	private static function get_template( $url, $type = 'website' ) {
-		$template = self::_get_file( $url, 'php', $type, self::$options['skin'] );
+	private static function get_template( $url, $type = 'website', $skin = false ) {
+		if ( false === $skin ) {
+			$skin = self::$options['skin'];
+		}
+		$template = self::_get_file( $url, 'php', $type, $skin );
 		$template = apply_filters( 'content_cards_template', $template, $url );
 		return $template;
 	}
@@ -223,7 +226,7 @@ class Content_Cards {
 	 */
 	public static function admin_init() {
 		if ( self::$stylesheet ) {
-			add_editor_style( self::$stylesheet );		
+			add_editor_style( self::$stylesheet );
 		}
 
 		/* Stylesheet for loading indicator */
@@ -302,7 +305,7 @@ class Content_Cards {
 						),
 						'callback' => 'number',
 					),
-			
+
 				),
 			),
 		);
@@ -315,7 +318,7 @@ class Content_Cards {
 			$tabs,
 			'Content_Cards',
 			'content-cards-settings'
-		);		
+		);
 	}
 
 	/**
@@ -421,10 +424,11 @@ class Content_Cards {
 	 */
 	public static function build( $url, $args = array(), $fallback = false ) {
 		$default = array(
-			'url' 			=> $url,
-			'target'		=> self::$options['target'],
+			'url' 				=> $url,
+			'target'			=> self::$options['target'],
 			'word_limit'	=> self::$options['word_limit'],
-			'class'			=> '',
+			'class'				=> '',
+			'skin'				=> self::$options['skin'],
 		);
 		$args = wp_parse_args( $args, $default );
 		$args = apply_filters( 'content_cards_args', $args, $url );
@@ -445,7 +449,8 @@ class Content_Cards {
 		$type = isset( $data['type'] ) ? $data['type'] : 'website';
 		$data = apply_filters( 'content_cards_data', $data, $url );
 		self::$temp_data = $data;
-		$template = self::get_template( $url, $type );
+		$template = self::get_template( $url, $type, $args['skin'] );
+		var_dump($template);
 		ob_start();
 		require( $template );
 		$result = ob_get_contents();
@@ -509,7 +514,7 @@ class Content_Cards {
 	 *
 	 * @param $post_id
 	 * @param $url
-	 * @param $url_md5	 
+	 * @param $url_md5
 	 * @return null
 	 */
 	public static function update_data( $post_id, $url, $url_md5 ) {
@@ -528,9 +533,9 @@ class Content_Cards {
 				$result = $new_result;
 			} else {
 				$result['cc_last_updated'] = time();
-			}				
+			}
 			$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
-		}		
+		}
 	}
 
 	/**
@@ -540,7 +545,7 @@ class Content_Cards {
 	 *
 	 * @param $post_id
 	 * @param $url
-	 * @param $url_md5	 
+	 * @param $url_md5
 	 * @return null
 	 */
 	public static function retry_data( $post_id, $url, $url_md5, $interval ) {
@@ -583,7 +588,7 @@ class Content_Cards {
 			if ( $graph ) {
 				foreach ($graph as $key => $value) {
 				    $result[$key] = $value;
-				}				
+				}
 			}
 		}
 		if ( $data && !$result ) {
@@ -611,13 +616,13 @@ class Content_Cards {
 				}
 			}
 			$result['cc_last_updated'] = time();
-			
+
 			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
 				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
 			}
 		}
 		return $result;
-	} 
+	}
 	public static function schedule_cleanups() {
 		global $wpdb;
 		$q = "SELECT DISTINCT `post_id` FROM {$wpdb->postmeta} WHERE meta_key LIKE 'content_cards_%' AND meta_key != 'content_cards_cached'";
@@ -652,14 +657,14 @@ class Content_Cards {
 					if ( $value['image_id'] ) {
 						wp_delete_attachment( $value['image_id'], true );
 					}
-				}						
+				}
 			}
 		}
 	}
 	public static function image_cleanup( $image_id ) {
 		$image_meta = get_post_meta( $image_id, 'content_cards_cached', true );
 		$post_id = $image_meta['post_id'];
-		$meta = get_post_meta( $post_id ); 
+		$meta = get_post_meta( $post_id );
 		$found = false;
 		foreach ( $meta as $key => $value ) {
 			if ( 0 === strpos( $key, 'content_cards_') ) {
@@ -737,7 +742,7 @@ class Content_Cards {
 		require_once(ABSPATH . "wp-admin" . '/includes/media.php');
 		$temp_file = download_url( $image_url );
 		if ( !is_wp_error( $temp_file ) ) {
-			$allowed_mime_types = array( 
+			$allowed_mime_types = array(
 				'image/jpeg',
 				'image/gif',
 				'image/png',
@@ -761,7 +766,7 @@ class Content_Cards {
 					'tmp_name' => $temp_file,
 					'error' => 0,
 					'size' => filesize($temp_file),
-				);			
+				);
 				$overrides = array(
 					'test_form' => false,
 					'test_size' => true,
@@ -772,7 +777,7 @@ class Content_Cards {
 				if ( $movefile && !isset( $movefile['error'] ) ) {
 					$wp_upload_dir = wp_upload_dir();
 					$attachment = array(
-						'guid'           => $wp_upload_dir['url'] . '/' . basename( $movefile['file'] ), 
+						'guid'           => $wp_upload_dir['url'] . '/' . basename( $movefile['file'] ),
 						'post_mime_type' => $movefile['type'],
 						'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $movefile['file'] ) ),
 						'post_content'   => '',
@@ -801,14 +806,14 @@ class Content_Cards {
 			finfo_close($finfo);
 		} elseif (function_exists('mime_content_type')) {
 			$mtype = mime_content_type($file);
-		} 
+		}
 		return $mtype;
 	}
 
 	private static function get_remote_favicon( $html, $url ) {
 		$old_libxml_error = libxml_use_internal_errors(true);
 		$dom = new DOMDocument();
-        $dom->loadHTML( $html );		
+        $dom->loadHTML( $html );
 		libxml_use_internal_errors($old_libxml_error);
         $links = $dom->getElementsByTagName('link');
         $favicon = false;
@@ -825,7 +830,7 @@ class Content_Cards {
 	        $response = wp_remote_head($temp);
 	        if ( isset($response['headers']['content-type']) && 0 === strpos( $response['headers']['content-type'], 'image/' ) ) {
 	        	$favicon = $temp;
-	        } 
+	        }
         }
         $favicon = self::force_absolute_url( $favicon, $url );
         return $favicon;
@@ -947,8 +952,8 @@ class Content_Cards {
 	    if ( 'settings_page_content-cards-settings' == get_current_screen() -> id ) {
 	        wp_enqueue_media();
 	        wp_enqueue_script( 'content-cards-upload' );
-	    }		
-	}	
+	    }
+	}
 
 }
 
