@@ -43,7 +43,8 @@ class Content_Cards {
 			unset( self::$options['theme'] );
 		}
 		self::$stylesheet = self::get_stylesheet();
-		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
+		add_action( 'wp_enqueue_scripts', 		array( 'Content_Cards', 'styles' ) );
+		add_action( 'amp_post_template_css',	array( 'Content_Cards', 'amp_styles') );
 		add_action( 'admin_enqueue_scripts',array( 'Content_Cards', 'admin_scripts' ) );
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
 
@@ -223,7 +224,7 @@ class Content_Cards {
 	 */
 	public static function admin_init() {
 		if ( self::$stylesheet ) {
-			add_editor_style( self::$stylesheet );		
+			add_editor_style( self::$stylesheet );
 		}
 
 		/* Stylesheet for loading indicator */
@@ -302,7 +303,7 @@ class Content_Cards {
 						),
 						'callback' => 'number',
 					),
-			
+
 				),
 			),
 		);
@@ -315,7 +316,7 @@ class Content_Cards {
 			$tabs,
 			'Content_Cards',
 			'content-cards-settings'
-		);		
+		);
 	}
 
 	/**
@@ -377,6 +378,21 @@ class Content_Cards {
 		if ( self::$stylesheet ) {
 			wp_register_style( 'content-cards', self::$stylesheet );
 			wp_enqueue_style( 'content-cards' );
+		}
+	}
+	
+	/**
+	 * Loads styles for AMP
+	 */
+	public static function amp_styles() {
+		$stylesheet = self::_get_file( false, 'css', false, self::$options['skin'] );
+		$amp_stylesheet = self::_get_file( false, 'css', 'amp', self::$options['skin'] );
+		// var_dump( $stylesheet );
+		if ( $stylesheet ) {
+			echo file_get_contents( $stylesheet );
+		}
+		if ( $stylesheet !== $amp_stylesheet ) {
+			echo file_get_contents( $amp_stylesheet );
 		}
 	}
 
@@ -509,7 +525,7 @@ class Content_Cards {
 	 *
 	 * @param $post_id
 	 * @param $url
-	 * @param $url_md5	 
+	 * @param $url_md5
 	 * @return null
 	 */
 	public static function update_data( $post_id, $url, $url_md5 ) {
@@ -528,9 +544,9 @@ class Content_Cards {
 				$result = $new_result;
 			} else {
 				$result['cc_last_updated'] = time();
-			}				
+			}
 			$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
-		}		
+		}
 	}
 
 	/**
@@ -540,7 +556,7 @@ class Content_Cards {
 	 *
 	 * @param $post_id
 	 * @param $url
-	 * @param $url_md5	 
+	 * @param $url_md5
 	 * @return null
 	 */
 	public static function retry_data( $post_id, $url, $url_md5, $interval ) {
@@ -583,7 +599,7 @@ class Content_Cards {
 			if ( $graph ) {
 				foreach ($graph as $key => $value) {
 				    $result[$key] = $value;
-				}				
+				}
 			}
 		}
 		if ( $data && !$result ) {
@@ -611,13 +627,13 @@ class Content_Cards {
 				}
 			}
 			$result['cc_last_updated'] = time();
-			
+
 			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
 				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
 			}
 		}
 		return $result;
-	} 
+	}
 	public static function schedule_cleanups() {
 		global $wpdb;
 		$q = "SELECT DISTINCT `post_id` FROM {$wpdb->postmeta} WHERE meta_key LIKE 'content_cards_%' AND meta_key != 'content_cards_cached'";
@@ -652,14 +668,14 @@ class Content_Cards {
 					if ( $value['image_id'] ) {
 						wp_delete_attachment( $value['image_id'], true );
 					}
-				}						
+				}
 			}
 		}
 	}
 	public static function image_cleanup( $image_id ) {
 		$image_meta = get_post_meta( $image_id, 'content_cards_cached', true );
 		$post_id = $image_meta['post_id'];
-		$meta = get_post_meta( $post_id ); 
+		$meta = get_post_meta( $post_id );
 		$found = false;
 		foreach ( $meta as $key => $value ) {
 			if ( 0 === strpos( $key, 'content_cards_') ) {
@@ -737,7 +753,7 @@ class Content_Cards {
 		require_once(ABSPATH . "wp-admin" . '/includes/media.php');
 		$temp_file = download_url( $image_url );
 		if ( !is_wp_error( $temp_file ) ) {
-			$allowed_mime_types = array( 
+			$allowed_mime_types = array(
 				'image/jpeg',
 				'image/gif',
 				'image/png',
@@ -761,7 +777,7 @@ class Content_Cards {
 					'tmp_name' => $temp_file,
 					'error' => 0,
 					'size' => filesize($temp_file),
-				);			
+				);
 				$overrides = array(
 					'test_form' => false,
 					'test_size' => true,
@@ -772,7 +788,7 @@ class Content_Cards {
 				if ( $movefile && !isset( $movefile['error'] ) ) {
 					$wp_upload_dir = wp_upload_dir();
 					$attachment = array(
-						'guid'           => $wp_upload_dir['url'] . '/' . basename( $movefile['file'] ), 
+						'guid'           => $wp_upload_dir['url'] . '/' . basename( $movefile['file'] ),
 						'post_mime_type' => $movefile['type'],
 						'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $movefile['file'] ) ),
 						'post_content'   => '',
@@ -801,14 +817,14 @@ class Content_Cards {
 			finfo_close($finfo);
 		} elseif (function_exists('mime_content_type')) {
 			$mtype = mime_content_type($file);
-		} 
+		}
 		return $mtype;
 	}
 
 	private static function get_remote_favicon( $html, $url ) {
 		$old_libxml_error = libxml_use_internal_errors(true);
 		$dom = new DOMDocument();
-        $dom->loadHTML( $html );		
+        $dom->loadHTML( $html );
 		libxml_use_internal_errors($old_libxml_error);
         $links = $dom->getElementsByTagName('link');
         $favicon = false;
@@ -825,7 +841,7 @@ class Content_Cards {
 	        $response = wp_remote_head($temp);
 	        if ( isset($response['headers']['content-type']) && 0 === strpos( $response['headers']['content-type'], 'image/' ) ) {
 	        	$favicon = $temp;
-	        } 
+	        }
         }
         $favicon = self::force_absolute_url( $favicon, $url );
         return $favicon;
@@ -947,8 +963,8 @@ class Content_Cards {
 	    if ( 'settings_page_content-cards-settings' == get_current_screen() -> id ) {
 	        wp_enqueue_media();
 	        wp_enqueue_script( 'content-cards-upload' );
-	    }		
-	}	
+	    }
+	}
 
 }
 
