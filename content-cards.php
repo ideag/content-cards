@@ -43,7 +43,8 @@ class Content_Cards {
 			unset( self::$options['theme'] );
 		}
 		self::$stylesheet = self::get_stylesheet();
-		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
+		add_action( 'wp_enqueue_scripts', 		array( 'Content_Cards', 'styles' ) );
+		add_action( 'amp_post_template_css',	array( 'Content_Cards', 'amp_styles') );
 		add_action( 'admin_enqueue_scripts',array( 'Content_Cards', 'admin_scripts' ) );
 		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
 
@@ -377,6 +378,21 @@ class Content_Cards {
 		if ( self::$stylesheet ) {
 			wp_register_style( 'content-cards', self::$stylesheet );
 			wp_enqueue_style( 'content-cards' );
+		}
+	}
+	
+	/**
+	 * Loads styles for AMP
+	 */
+	public static function amp_styles() {
+		$stylesheet = self::_get_file( false, 'css', false, self::$options['skin'] );
+		$amp_stylesheet = self::_get_file( false, 'css', 'amp', self::$options['skin'] );
+		// var_dump( $stylesheet );
+		if ( $stylesheet ) {
+			echo file_get_contents( $stylesheet );
+		}
+		if ( $stylesheet !== $amp_stylesheet ) {
+			echo file_get_contents( $amp_stylesheet );
 		}
 	}
 
