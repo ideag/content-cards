@@ -923,9 +923,8 @@ class Content_Cards {
 			$post = get_post( $post_id );
 			setup_postdata( $post );
 		}
-		ob_start();
-		echo do_shortcode( $shortcode );
-		wp_send_json_success( ob_get_clean() );
+
+		wp_send_json_success( do_shortcode( $shortcode ) );
 	}
 
     /**
