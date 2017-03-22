@@ -597,8 +597,9 @@ class Content_Cards {
 	 */
 	private static function get_remote_data( $url, $post_id ) {
 		if ( !class_exists( 'tiny_OpenGraph' ) ) {
-			require_once( self::$plugin_dir . 'includes/opengraph.php' );
+			require_once( self::$plugin_path . 'includes/opengraph.php' );
 		}
+
 		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
 		$data = mb_convert_encoding($data, 'HTML-ENTITIES', 'auto,ISO-8859-1');
 		$result = array();
