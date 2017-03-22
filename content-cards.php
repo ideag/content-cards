@@ -46,9 +46,10 @@ class Content_Cards {
 			unset( self::$options['theme'] );
 		}
 		self::$stylesheet = self::get_stylesheet();
-		add_action( 'wp_enqueue_scripts', 	array( 'Content_Cards', 'styles' ) );
-		// add_action( 'admin_enqueue_scripts',array( 'Content_Cards', 'admin_scripts' ) );
-		add_action( 'admin_init', 					array( 'Content_Cards', 'admin_init' ) );
+		add_action( 'wp_enqueue_scripts', 		array( 'Content_Cards', 'styles' ) );
+		add_action( 'amp_post_template_css',	array( 'Content_Cards', 'amp_styles') );
+		add_action( 'admin_enqueue_scripts',array( 'Content_Cards', 'admin_scripts' ) );
+		add_action( 'admin_init', 			array( 'Content_Cards', 'admin_init' ) );
 
 		// if(self::$options['enable_admin_page']) {
 		// 	add_action( 'admin_menu', 			array( 'Content_Cards', 'admin_menu' ) );
@@ -383,6 +384,21 @@ class Content_Cards {
 	}
 
 	/**
+	 * Loads styles for AMP
+	 */
+	public static function amp_styles() {
+		$stylesheet = self::_get_file( false, 'css', false, self::$options['skin'] );
+		$amp_stylesheet = self::_get_file( false, 'css', 'amp', self::$options['skin'] );
+		// var_dump( $stylesheet );
+		if ( $stylesheet ) {
+			echo file_get_contents( $stylesheet );
+		}
+		if ( $stylesheet !== $amp_stylesheet ) {
+			echo file_get_contents( $amp_stylesheet );
+		}
+	}
+
+	/**
 	 * oEmbed handler for domains in
 	 * "oEmbed White List"
 	 *
@@ -576,12 +592,14 @@ class Content_Cards {
 	 * @return array|mixed
 	 */
 	private static function get_remote_data( $url, $post_id ) {
-		require_once( self::$plugin_path . 'includes/opengraph.php' );
+		if ( !class_exists( 'tiny_OpenGraph' ) ) {
+			require_once( self::$plugin_dir . 'includes/opengraph.php' );
+		}
 		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
 		$data = mb_convert_encoding($data, 'HTML-ENTITIES', 'auto,ISO-8859-1');
 		$result = array();
 		if ( $data ) {
-			$graph = OpenGraph::parse( $data );
+			$graph = tiny_OpenGraph::parse( $data );
 			if ( $graph ) {
 				foreach ($graph as $key => $value) {
 				    $result[$key] = $value;
@@ -944,6 +962,13 @@ class Content_Cards {
     	wp_localize_script( 'content-cards', 'contentcards', $data );
     }
 
+	public static function admin_scripts() {
+    	wp_register_script( 'content-cards-upload', plugins_url( 'content-cards-upload.js', __FILE__ ) , array('jquery','media-upload','thickbox') );
+	    if ( 'settings_page_content-cards-settings' == get_current_screen() -> id ) {
+	        wp_enqueue_media();
+	        wp_enqueue_script( 'content-cards-upload' );
+	    }
+	}
 }
 
 /**
