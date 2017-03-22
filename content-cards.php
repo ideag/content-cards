@@ -437,7 +437,7 @@ class Content_Cards {
 			$result = '';
 			if ( $fallback ) {
 				$target = $args['target'] ? ' target="_blank"' : "";
-				$domain = parse_url( $url, PHP_URL_HOST );
+				$domain = wp_parse_url( $url, PHP_URL_HOST );
 				$result = wpautop( "<a href=\"{$url}\"{$target}>{$domain}</a>" );
 			}
 			return $result;
@@ -450,7 +450,6 @@ class Content_Cards {
 		$data = apply_filters( 'content_cards_data', $data, $url );
 		self::$temp_data = $data;
 		$template = self::get_template( $url, $type, $args['skin'] );
-		var_dump($template);
 		ob_start();
 		require( $template );
 		$result = ob_get_contents();
@@ -596,7 +595,7 @@ class Content_Cards {
 		}
 		if ( $result ) {
 			if ( !isset( $result['site_name'] ) ) {
-				$result['site_name'] = parse_url( $url, PHP_URL_HOST );
+				$result['site_name'] = wp_parse_url( $url, PHP_URL_HOST );
 			}
 			$result['favicon'] = self::get_remote_favicon( $data, $url );
 			if ( isset($result['image']) && $result['image'] ) {
@@ -825,7 +824,7 @@ class Content_Cards {
             }
         }
         if ( !$favicon ) {
-	        $url_parts = parse_url( $url );
+	        $url_parts = wp_parse_url( $url );
 	        $temp = "{$url_parts['scheme']}://{$url_parts['host']}/favicon.ico";
 	        $response = wp_remote_head($temp);
 	        if ( isset($response['headers']['content-type']) && 0 === strpos( $response['headers']['content-type'], 'image/' ) ) {
@@ -838,7 +837,7 @@ class Content_Cards {
 
 	private static function force_absolute_url( $url, $site_url ) {
 		if ( $url && !filter_var( $url, FILTER_VALIDATE_URL ) && !filter_var( 'http:'.$url, FILTER_VALIDATE_URL ) ) {
-			$url_parts = parse_url($site_url);
+			$url_parts = wp_parse_url($site_url);
     		$site_url = $url_parts['scheme'] . "://" . $url_parts['host'] . "/";
     		if ( 0 !== strpos( $url, '/' ) ) {
     			$url = '/'.$url;
@@ -991,16 +990,22 @@ function the_cc_target() {
 
 /**
  * Add in filterable CSS classes
+ *
+ * @param array $classes classes to print.
  */
 function the_cc_css_classes( $classes = array( 'content_cards_card' ) ) {
 	$temp_class = Content_Cards::$temp_data['css_class'];
 	$temp_class = explode( ' ', $temp_class );
-	if ( !is_array( $classes ) ) {
+	if ( ! is_array( $classes ) ) {
 		$classes = explode( ' ', $classes );
 	}
+	$domain = wp_parse_url( Content_Cards::$temp_data['url'], PHP_URL_HOST );
+	$domain = sanitize_title( $domain );
+	$classes[] = "content_cards_domain_{$domain}";
 	$classes = array_merge( $temp_class, $classes );
-	$classes = apply_filters('content_cards_css_classes', $classes );
-	echo implode(" ", $classes );
+	$classes = apply_filters( 'content_cards_css_classes', $classes );
+	$classes = implode( ' ', $classes );
+	echo esc_attr( $classes );
 }
 
 /**
