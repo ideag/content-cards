@@ -78,16 +78,16 @@ class Content_Cards {
 		$patterns = self::$options['patterns'];
 		$patterns = explode( "\r\n", $patterns );
 		if ( is_array( $patterns ) ) {
-			foreach ( $patterns as $id => $domain) {
+			foreach ( $patterns as $id => $domain ) {
 				$domain = str_replace( '.', '\.', $domain );
 				$regex = "#https?://(www\.)?{$domain}/?(.*?)#i";
 				wp_embed_register_handler( $id, $regex, array( 'Content_Cards', 'oembed' ) );
 			}
 		}
-	    add_filter( "mce_external_plugins", array( 'Content_Cards', 'editor_button_js' ) );
-	    add_filter( 'mce_buttons', 			array( 'Content_Cards', 'editor_button' ) );
+		add_filter( 'mce_external_plugins',	array( 'Content_Cards', 'editor_button_js' ) );
+		add_filter( 'mce_buttons',					array( 'Content_Cards', 'editor_button' ) );
 
-	    // shortcode preview
+	    // shortcode preview.
 		add_action( 'admin_init', 						array( 'Content_Cards', 'init_preview' ), 20 );
 		add_action( 'wp_ajax_content_cards_shortcode', 	array( 'Content_Cards', 'ajax_shortcode' ), 20 );
 	}
@@ -414,22 +414,23 @@ class Content_Cards {
 	 */
 	public static function oembed( $matches, $attr, $url, $rawattr ) {
 		$embed = self::build( $url );
+		// $embed = wp_replace_in_html_tags( $embed, array( "\n" => '<!-- wp-line-break -->' ) );
 		return apply_filters( 'embed_content_cards', $embed, $matches, $attr, $url, $rawattr );
 	}
 
 	/**
 	 * Registers shortcode
 	 *
-	 * @param $args
-	 * @param string $content
+	 * @param array  $args shortcode attributes.
+	 * @param string $content shortcode content.
 	 * @return string
 	 */
-	public static function shortcode( $args, $content = '') {
+	public static function shortcode( $args, $content = '' ) {
 		$result = '';
-		if ( !isset( $args['url'] ) ) {
+		if ( ! isset( $args['url'] ) ) {
 			return $result;
 		}
-		$result = self::build( $args['url'], $args, !is_admin() );
+		$result = self::build( $args['url'], $args, ! is_admin() );
 		return $result;
 	}
 
@@ -437,8 +438,8 @@ class Content_Cards {
 	 * Builds the data and output
 	 * for displaying the Content Card
 	 *
-	 * @param $url
-	 * @param null $target
+	 * @param string $url embed url.
+	 * @param array  $args attributes.
 	 * @return string
 	 */
 	public static function build( $url, $args = array(), $fallback = false ) {
@@ -452,16 +453,16 @@ class Content_Cards {
 		$args = wp_parse_args( $args, $default );
 		$args = apply_filters( 'content_cards_args', $args, $url );
 		$data = self::get_data( $url );
-		if ( !$data ) {
+		if ( ! $data ) {
 			$result = '';
 			if ( $fallback ) {
-				$target = $args['target'] ? ' target="_blank"' : "";
+				$target = $args['target'] ? ' target="_blank"' : '';
 				$domain = wp_parse_url( $url, PHP_URL_HOST );
 				$result = wpautop( "<a href=\"{$url}\"{$target}>{$domain}</a>" );
 			}
 			return $result;
 		}
-		$data['description'] = wpautop(isset($data['description'])?$data['description']:'');
+		$data['description'] = wpautop( isset( $data['description'] ) ? $data['description'] : '' );
 		$data['url'] = $url;
 		$data['target'] = $args['target'];
 		$data['css_class'] = $args['class'];
@@ -489,14 +490,14 @@ class Content_Cards {
 			$post_id = get_the_id();
 		}
 		$url_md5 = md5( $url );
-		$result = get_post_meta( $post_id, 'content_cards_'.$url_md5, true );
-		if ( !$result ) {
+		$result = get_post_meta( $post_id, "content_cards_{$url_md5}", true );
+		if ( ! $result ) {
 			$args = array( $post_id, $url, $url_md5, MINUTE_IN_SECONDS );
 			if ( false === wp_next_scheduled( 'content_cards_retry', $args ) ) {
 				$result = self::get_remote_data( $url, $post_id );
 				if ( $result ) {
 					$result['url'] = $url;
-					$meta_id = update_post_meta( $post_id, 'content_cards_'.$url_md5, $result );
+					$meta_id = update_post_meta( $post_id, "content_cards_{$url_md5}", $result );
 				} else {
 					wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'content_cards_retry', $args );
 				}
@@ -911,7 +912,7 @@ class Content_Cards {
         add_action( 'admin_enqueue_scripts', array( 'Content_Cards', 'scripts_preview' ), 100 );
     }
 	public static function ajax_shortcode() {
-		// Don't sanitize shortcodes — can contain HTML kses doesn't allow (e.g. sourcecode shortcode)
+		// Don't sanitize shortcodes — can contain HTML kses doesn't allow (e.g. sourcecode shortcode).
 		if ( ! empty( $_POST['shortcode'] ) ) {
 			$shortcode = stripslashes( $_POST['shortcode'] );
 		} else {
