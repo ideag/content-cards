@@ -6,6 +6,7 @@ Version: 0.9.6
 Author: Arūnas Liuiza
 Author URI: http://arunas.co
 License: GPL2
+Text Domain: content-cards
 */
 
 add_action( 'plugins_loaded', array( 'Content_Cards', 'init' ) );
