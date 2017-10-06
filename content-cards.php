@@ -721,6 +721,9 @@ class Content_Cards {
 			return $query;
 		}
 		$q = $query->get( 'meta_query' );
+		if ( ! is_array( $q ) ) {
+			$q = array();
+		}
 		$q[] = array(
 			'key' 		=> 'content_cards_cached',
 			'compare'	=> 'NOT EXISTS',
