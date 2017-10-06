@@ -127,6 +127,11 @@ You can also override a number of other options using this hook. For example, he
 
 == Changelog ==
 
+= 0.9.6 =
+
+* add textdomain
+* fix [] not supported on strings error
+
 = 0.9.5 =
 
 * improved handling of non UTF-8 encoded websites
