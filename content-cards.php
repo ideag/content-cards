@@ -2,7 +2,7 @@
 /*
 Plugin Name: Content Cards
 Description: Embed any link from the web easily as a beautiful Content Card
-Version: 0.9.6
+Version: 0.9.7
 Author: Arūnas Liuiza
 Author URI: http://arunas.co
 License: GPL2
@@ -393,7 +393,6 @@ class Content_Cards {
 	public static function amp_styles() {
 		$stylesheet = self::_get_file( false, 'css', false, self::$options['skin'] );
 		$amp_stylesheet = self::_get_file( false, 'css', 'amp', self::$options['skin'] );
-		// var_dump( $stylesheet );
 		if ( $stylesheet ) {
 			echo file_get_contents( $stylesheet );
 		}
@@ -598,22 +597,22 @@ class Content_Cards {
 	 * @return array|mixed
 	 */
 	private static function get_remote_data( $url, $post_id ) {
-		if ( !class_exists( 'tiny_OpenGraph' ) ) {
+		if ( ! class_exists( 'tiny_OpenGraph' ) ) {
 			require_once( self::$plugin_path . 'includes/opengraph.php' );
 		}
 
 		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
-		$data = mb_convert_encoding($data, 'HTML-ENTITIES', 'auto,ISO-8859-1');
+		$data = mb_convert_encoding( $data, 'HTML-ENTITIES', 'auto,ISO-8859-1');
 		$result = array();
 		if ( $data ) {
 			$graph = tiny_OpenGraph::parse( $data );
 			if ( $graph ) {
-				foreach ($graph as $key => $value) {
-				    $result[$key] = $value;
+				foreach ( $graph as $key => $value ) {
+				  $result[ $key ] = $value;
 				}
 			}
 		}
-		if ( $data && !$result ) {
+		if ( $data && ! $result ) {
 			$result = self::get_remote_data_fallback( $data );
 		}
 		if ( $result ) {
@@ -642,6 +641,9 @@ class Content_Cards {
 			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
 				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
 			}
+		}
+		foreach ( $result as $key => $value ) {
+			$result[ $key ] = strip_tags( $value );
 		}
 		return $result;
 	}

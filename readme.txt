@@ -5,7 +5,7 @@ Tags: opengraph, open graph, oembed, link cards, snippet, rich snippet, content 
 Donate link: http://arunas.co#coffee
 Requires at least: 4.1.0
 Tested up to: 4.8
-Stable tag: 0.9.6
+Stable tag: 0.9.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,7 +42,7 @@ The shortcode accepts two attributes:
 
 You can also insert the shortcode via a button in your visual editor. Start by pressing the Content Cards icon in WordPress visual editor's (TinyMCE) toolbar. If no other plugins are adding their buttons, our button should be the last one in the top toolbar.
 
-= oEmbed = 
+= oEmbed =
 
 If You find that you are adding a lot of Content Cards from some single domain, You can save yourself some work, by white-listing that website as oEmbed provider in Content Card Settings page.
 
@@ -50,7 +50,7 @@ White-listed sites work the same way any other oEmbed provider in WordPress (You
 
 In Content Cards Settings page you can provide a list of white-listed sites. Put only domain name (`example.com`), one domain per line.
 
-= Skins = 
+= Skins =
 
 Content Cards come with two default skins - `Default` and `Default Dark` - created by Stanislav Khromov. These skins are designed to provide minimal structural styling and blend in nicely with active theme by inheriting the font from the theme.
 
@@ -65,7 +65,7 @@ Content Cards provides five new template tags: `get_cc_data()`, `the_cc_data()` 
 * `the_cc_target()` - a special helper function, that prints ` target="_blank"` to links if needed (according to plugin/shortcode settings). Usage: `<a href=""<?php the_cc_target() ?>>`.
 * `get_cc_image( $size, $sanitize = false )` - *new in v0.9.1* - returns a link to image if there is one. Defaults to image, cached in Media Library, then to remote image. For cached images, you can use `$size` parameter to get specific WordPress image size.
 * `the_cc_image( $size, $attrs = array() )` - *new in v0.9.1* - prints an image tag. Uses `get_cc_images()`.
-* `the_cc_css_classes( $classes )` - *new in v0.9.4* - a filterable template tag to print out CSS classes for the main div of Content Card. Custom CSS classes can also be passed via `class` attribute in the shortcode 
+* `the_cc_css_classes( $classes )` - *new in v0.9.4* - a filterable template tag to print out CSS classes for the main div of Content Card. Custom CSS classes can also be passed via `class` attribute in the shortcode
 
 Also since `v0.9.1` you can use `'favicon'` key in `get_cc_data()/the_cc_data()` to display favicon if the remote site provides one.
 
@@ -127,6 +127,11 @@ You can also override a number of other options using this hook. For example, he
 
 == Changelog ==
 
+= 0.9.7 =
+
+* added sanitization for OpenGraph data to prevent possible XSS attack (reported by Vahid Nameni)
+* added some fixes for WordPress autopeeing on our snippet code.
+
 = 0.9.6 =
 
 * add textdomain
@@ -143,13 +148,13 @@ You can also override a number of other options using this hook. For example, he
 * cached images are now removed on plugin deactivation/removal
 * added a toggle to disable local image caching
 
-= 0.9.3 = 
+= 0.9.3 =
 
 * bugfix 'undefined' `download_url()` function.
 * bugfix `force_absolute_url()` method to work correctly with protocol-agnostic (//domain.com) URIs.
 * enhanced favicon detection mechanism.
 
-= 0.9.2 = 
+= 0.9.2 =
 
 * fixes a bug where `wp-admin` became unaccessible due to 'undefined' `get_current_screen()` function
 
@@ -157,7 +162,7 @@ You can also override a number of other options using this hook. For example, he
 
 * New feature - Content Card images are now cached in Media Library.
 * Added `'favicon'` key to display site icon.
-* Content Cards' `max-width` limited to 600px via CSS. 
+* Content Cards' `max-width` limited to 600px via CSS.
 * Added an option to limit how many words should be displayed in `'description'`.
 * Fixed a bug where non absolute URIs were provided for favicon and/or image in OG:data
 * Added an icon for TinyMCE editor button.
