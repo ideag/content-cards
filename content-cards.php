@@ -721,7 +721,7 @@ class Content_Cards {
 		if (defined('DOING_AJAX') && DOING_AJAX) {
 			return $query;
 		}
-		if ( !function_exists('get_current_screen') || 'upload' !== get_current_screen()->base ) {
+		if ( !function_exists('get_current_screen') || (is_object(get_current_screen()) && 'upload' !== get_current_screen()->base) ) {
 			return $query;
 		}
 		$q = $query->get( 'meta_query' );
