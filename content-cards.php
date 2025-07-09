@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: Content Cards
-Description: Embed any link from the web easily as a beautiful Content Card
-Version: 0.9.7
-Author: Arūnas Liuiza
-Author URI: http://arunas.co
+Plugin Name: Content Cards (Secure Fork)
+Description: Fork sécurisé et compatible PHP 8.1+ du plugin "Content Cards". Permet d'intégrer tout lien web sous forme de carte enrichie.
+Version: 1.0.0
+Author: Pierre Lannes
+Author URI: https://www.pierre-lannes.fr
 License: GPL2
 Text Domain: content-cards
 */
@@ -30,7 +30,7 @@ class Content_Cards {
 		'enable_admin_page' => true
 	);
 	public static $settings = false;
-	private static $stylesheet = '';
+	public static $stylesheet = '';
 	public static $plugin_path;
 	public static $temp_data = array();
 
@@ -138,22 +138,30 @@ class Content_Cards {
 	 * @param string $method
 	 * @return mixed|string|void
 	 */
-	private static function _get_file( $url, $extension='php', $type = 'website', $theme ="default", $method='dir' ) {
+	public static function _get_file( $url, $extension='php', $type = 'website', $theme ="default", $method='dir' ) {
+		// Ancien code dynamique :
+		// $skin = get_option('contentcards_skin', 'default');
+
+		// Nouveau code avec whitelist :
+		$skin = get_option('contentcards_skin', 'default');
+		if ( ! in_array( $skin, ['default', 'default-dark'], true ) ) {
+			$skin = 'default';
+		}
 		$plugin_path = plugin_dir_path( __FILE__ );
 		$plugin_uri = 'dir' === $method ? $plugin_path : plugins_url( '/', __FILE__ );
 		$theme_dir = get_template_directory() . '/';
 		$theme_uri = 'dir' === $method ? $theme_dir : ( get_template_directory_uri() . '/' );
 		$child_theme_dir = get_stylesheet_directory() . '/';
 		$child_theme_uri = 'dir' === $method ? $child_theme_dir : ( get_stylesheet_directory_uri() . '/' );
-		$template =  "{$plugin_uri}skins/{$theme}/content-cards.{$extension}";
+		$template =  "{$plugin_uri}skins/{$skin}/content-cards.{$extension}";
 		if ( file_exists( "{$theme_dir}content-cards.{$extension}" ) ) {
 			$template = "{$theme_uri}content-cards.{$extension}";
 		}
 		if ( file_exists( "{$child_theme_dir}content-cards.{$extension}" ) ) {
 			$template = "{$child_theme_uri}content-cards.{$extension}";
 		}
-		if ( file_exists( "{$plugin_path}skins/{$theme}/content-cards-{$type}.{$extension}" ) ) {
-			$template = "{$plugin_uri}skins/{$theme}/content-cards-{$type}.{$extension}";
+		if ( file_exists( "{$plugin_path}skins/{$skin}/content-cards-{$type}.{$extension}" ) ) {
+			$template = "{$plugin_uri}skins/{$skin}/content-cards-{$type}.{$extension}";
 		}
 		if ( file_exists( "{$theme_dir}content-cards-{$type}.{$extension}" ) ) {
 			$template = "{$theme_uri}content-cards-{$type}.{$extension}";
@@ -172,7 +180,7 @@ class Content_Cards {
 	 * @param string $type
 	 * @return mixed|string|void
 	 */
-	private static function get_template( $url, $type = 'website', $skin = false ) {
+	public static function get_template( $url, $type = 'website', $skin = false ) {
 		if ( false === $skin ) {
 			$skin = self::$options['skin'];
 		}
@@ -186,7 +194,7 @@ class Content_Cards {
 	 *
 	 * @return mixed|string|void
 	 */
-	private static function get_stylesheet( ) {
+	public static function get_stylesheet( ) {
 		$template = self::_get_file( false, 'css', '', self::$options['skin'], 'uri'  );
 		$template = apply_filters( 'content_cards_stylesheet', $template );
 		return $template;
@@ -198,7 +206,7 @@ class Content_Cards {
 	 *
 	 * @return mixed|string|void
 	 */
-	private static function get_placeholder( ) {
+	public static function get_placeholder( ) {
 		$template = self::_get_file( false, 'png', 'placeholder', self::$options['skin'], 'uri'  );
 		$template = apply_filters( 'content_cards_placeholder', $template );
 		return $template;
@@ -209,7 +217,7 @@ class Content_Cards {
 	 *
 	 * @return mixed|string|void
 	 */
-	private static function get_loading_image( ) {
+	public static function get_loading_image( ) {
 		$template = self::_get_file( false, 'gif', 'loading', self::$options['skin'], 'uri'  );
 		$template = apply_filters( 'content_cards_loading_image', $template );
 		return $template;
@@ -220,7 +228,7 @@ class Content_Cards {
 	 *
 	 * @return mixed|string|void
 	 */
-	private static function get_editor_stylesheet( ) {
+	public static function get_editor_stylesheet( ) {
 		$template = self::_get_file( false, 'css', 'editor', self::$options['skin'], 'uri'  );
 		$template = apply_filters( 'content_cards_editor_stylesheet', $template );
 		return $template;
@@ -242,87 +250,6 @@ class Content_Cards {
 	 * Creates admin menu
 	 */
 	public static function init_options() {
-		// require_once ( self::$plugin_path . 'includes/options.php' );
-		self::$settings = array(
-			'page' => array(
-				'title' 			=> __( 'Content Cards Settings', 'content-cards' ),
-				'menu_title'	=> __( 'Content Cards', 'content-cards' ),
-				'slug' 				=> 'content-cards-settings',
-				'option'			=> 'content-cards_options',
-				// optional
-				// 'description'	=> __( 'Some general information about the plugin', 'content-cards' ),
-			),
-			'sections' => array(
-				"general" => array(
-					'title'				=> '',
-					'fields' => array(
-						'patterns' => array(
-							'title'				=> __('oEmbed White List','content-cards'),
-							'callback' 		=> 'textarea',
-							'attributes' 	=> array (
-								'rows'	=> 10,
-								'cols'	=> 60,
-							),
-							'description' => __( 'A list of domain names, i.e. <code>domain.com</code>, one per line.', 'content-cards' ),
-						),
-						'skin' => array(
-							'title'				=> __('Snippet Skin','content-cards'),
-							'callback' 		=> 'listfield',
-							'list' 				=> self::get_skins(),
-							'description' => __( 'Can be overwritten by theme.', 'content-cards' ),
-						),
-						'target' => array(
-							'title'				=> __('Link Target','content-cards'),
-							'label'				=> __('Open links in new tab?','content-cards'),
-							'callback' 		=> 'checkbox',
-						),
-						'update_interval' => array(
-							'title'				=> __('Update Interval','content-cards'),
-							'callback' 		=> 'listfield',
-							'list'	 			=> array(
-								HOUR_IN_SECONDS     => __( 'Hourly', 'content-cards' ),
-								2 * HOUR_IN_SECONDS => __( 'Every 2 Hours', 'content-cards' ),
-								6 * HOUR_IN_SECONDS => __( 'Every 6 Hours', 'content-cards' ),
-								DAY_IN_SECONDS / 2  => __( 'Twice Daily', 'content-cards' ),
-								DAY_IN_SECONDS      => __( 'Daily', 'content-cards' ),
-							),
-							'description' => __( 'How often should Content Cards check for changes in OpenGraph data?', 'content-cards' ),
-						),
-						'default_image' => array(
-							'title'							=> __( 'Placeholder Image', 'content-cards' ),
-							'callback' 					=> 'upload',
-							'description' 			=> __( 'Placeholder image for links that do not have OpenGraph data. (Leave empty to use default image set by skin.)', 'content-cards' ),
-							'button_attributes' => array(
-								'value' 											=> __( 'Upload Image', 'content-cards' ),
-								'data-uploader_button_text' 	=> __( 'Upload Image', 'content-cards' ),
-								'data-uploader_title' 				=> __( 'Select File', 'content-cards' ),
-							),
-						),
-						'cache_images' => array(
-							'title'			=> __( 'Cache Images', 'content-cards' ),
-							'label'			=> __( 'Should Content Cards cache images to Media Library?', 'content-cards' ),
-							'callback' 	=> 'checkbox',
-						),
-						'word_limit' => array(
-							'title'				=> __( 'Word Limit', 'content-cards' ),
-							'description'	=> __( 'Limit maximum number of words in description.', 'content-cards' ),
-							'attributes' 	=> array (
-								'type' 	=> 'number',
-								'min' 	=> 0,
-							),
-						),
-					),
-				),
-			),
-			'l10n' => array(
-				'no_access'			=> __( 'You do not have sufficient permissions to access this page.', 'content-cards' ),
-				'save_changes'	=> esc_attr( 'Save Changes', 'content-cards' ),
-				'upload'				=> __( 'Upload File', 'content-cards' ),
-				'upload_button' => __( 'Upload', 'content-cards' ),
-			),
-		);
-		require_once( self::$plugin_path . 'tiny/tiny.options.php' );
-		self::$settings = new tinyOptions( self::$settings, __CLASS__ );
 	}
 
 	/**
@@ -330,7 +257,7 @@ class Content_Cards {
 	 *
 	 * @return array
 	 */
-	private static function get_skins() {
+	public static function get_skins() { // OLD public static function get_skins()
 		$dir = plugin_dir_path( __FILE__ );
 		$dir .= 'skins/*';
 		$list = glob($dir);
@@ -363,7 +290,7 @@ class Content_Cards {
 	 * @param $dir
 	 * @return array|bool
 	 */
-	private static function get_skin_data( $dir ) {
+	public static function get_skin_data( $dir ) {
 		$stylesheet = $dir."/content-cards.css";
 		if ( !file_exists( $stylesheet ) ) {
 			return false;
@@ -484,7 +411,7 @@ class Content_Cards {
 	 * @param $post_id
 	 * @return array|mixed
 	 */
-	private static function get_data( $url, $post_id = false ) {
+	public static function get_data( $url, $post_id = false ) {
 		if ( !$post_id ) {
 			$post_id = get_the_id();
 		}
@@ -596,12 +523,27 @@ class Content_Cards {
 	 * @param $url
 	 * @return array|mixed
 	 */
-	private static function get_remote_data( $url, $post_id ) {
+	public static function get_remote_data( $url, $post_id ) {
 		if ( ! class_exists( 'tiny_OpenGraph' ) ) {
 			require_once( self::$plugin_path . 'includes/opengraph.php' );
 		}
 
-		$data = wp_remote_retrieve_body( wp_remote_get( $url ) );
+		// Validation stricte de l'URL
+		if ( ! filter_var($url, FILTER_VALIDATE_URL) || ! preg_match('/^https?:\/\//', $url) ) {
+			return new WP_Error('invalid_url');
+		}
+
+		// Ancien appel :
+		// $response = wp_remote_get($url);
+
+		// Appel sécurisé :
+		$response = wp_remote_get($url, [
+			'timeout' => 5,
+			'redirection' => 2,
+			'limit_response_size' => 1048576,
+			'reject_unsafe_urls' => true,
+		]);
+		$data = wp_remote_retrieve_body( $response );
 		$data = mb_convert_encoding( $data, 'HTML-ENTITIES', 'auto,ISO-8859-1');
 		$result = array();
 		if ( $data ) {
@@ -640,6 +582,13 @@ class Content_Cards {
 
 			if ( isset( $result['description'] ) && self::$options['word_limit'] ) {
 				$result['description'] = wp_trim_words( $result['description'], self::$options['word_limit'] );
+			}
+		}
+		// Après la récupération des métadonnées OG, nettoyage des champs
+		$og_fields = array('title','description','site_name','image','favicon');
+		foreach ( $og_fields as $field ) {
+			if (isset($result[$field])) {
+				$result[$field] = esc_html(wp_strip_all_tags($result[$field]));
 			}
 		}
 		foreach ( $result as $key => $value ) {
@@ -748,13 +697,13 @@ class Content_Cards {
 		}
 		return $query;
 	}
-	private static function _count_cached() {
+	public static function _count_cached() {
 		global $wpdb;
 		$q = "SELECT COUNT( * ) FROM {$wpdb->postmeta} WHERE meta_key='content_cards_cached'";
 		$q = $wpdb->get_var($q);
 		return $q;
 	}
-	private static function _delete_cached() {
+	public static function _delete_cached() {
 		global $wpdb;
 		$q = "SELECT `post_id` FROM {$wpdb->postmeta} WHERE meta_key='content_cards_cached'";
 		$q = $wpdb->get_col($q);
@@ -763,12 +712,18 @@ class Content_Cards {
 		}
 	}
 
-	private static function cache_image( $image_url, $post_id ) {
+	public static function cache_image( $image_url, $post_id ) {
 		require_once(ABSPATH . "wp-admin" . '/includes/image.php');
 		require_once(ABSPATH . "wp-admin" . '/includes/file.php');
 		require_once(ABSPATH . "wp-admin" . '/includes/media.php');
 		$temp_file = download_url( $image_url );
 		if ( !is_wp_error( $temp_file ) ) {
+			// Vérification stricte du type MIME et de l'extension
+			$file_check = wp_check_filetype_and_ext($temp_file, $temp_file);
+			if ( empty($file_check['proper_filename']) ) {
+				@unlink($temp_file);
+				return new WP_Error('invalid_filetype');
+			}
 			$allowed_mime_types = array(
 				'image/jpeg',
 				'image/gif',
@@ -825,7 +780,7 @@ class Content_Cards {
 		}
 		return false;
 	}
-	private static function _get_mime_type($file) {
+	public static function _get_mime_type($file) {
 		$mtype = false;
 		if (function_exists('finfo_open')) {
 			$finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -837,7 +792,7 @@ class Content_Cards {
 		return $mtype;
 	}
 
-	private static function get_remote_favicon( $html, $url ) {
+	public static function get_remote_favicon( $html, $url ) {
 		$old_libxml_error = libxml_use_internal_errors(true);
 		$dom = new DOMDocument();
         $dom->loadHTML( $html );
@@ -863,7 +818,7 @@ class Content_Cards {
         return $favicon;
 	}
 
-	private static function force_absolute_url( $url, $site_url ) {
+	public static function force_absolute_url( $url, $site_url ) {
 		if ( $url && !filter_var( $url, FILTER_VALIDATE_URL ) && !filter_var( 'http:'.$url, FILTER_VALIDATE_URL ) ) {
 			$url_parts = wp_parse_url($site_url);
     		$site_url = $url_parts['scheme'] . "://" . $url_parts['host'] . "/";
@@ -875,7 +830,7 @@ class Content_Cards {
 		return $url;
 	}
 
-	private static function get_remote_data_fallback( $data ) {
+	public static function get_remote_data_fallback( $data ) {
 		$result = array();
 
 		$title = false;
@@ -914,24 +869,23 @@ class Content_Cards {
         add_action( 'admin_enqueue_scripts', array( 'Content_Cards', 'scripts_preview' ), 100 );
     }
 	public static function ajax_shortcode() {
-		// Don't sanitize shortcodes — can contain HTML kses doesn't allow (e.g. sourcecode shortcode).
-		if ( ! empty( $_POST['shortcode'] ) ) {
-			$shortcode = stripslashes( $_POST['shortcode'] );
-		} else {
-			$shortcode = null;
-		}
-		if ( isset( $_POST['post_id'] ) ) {
-			$post_id = intval( $_POST['post_id'] );
-		} else {
-			$post_id = null;
-		}
-		if ( ! empty( $post_id ) ) {
-			global $post;
-			$post = get_post( $post_id );
-			setup_postdata( $post );
-		}
+		// Ancien code :
+		// $shortcode = stripslashes_deep( $_POST['shortcode'] );
+		// echo do_shortcode( $shortcode );
 
-		wp_send_json_success( do_shortcode( $shortcode ) );
+		// Nouveau code avec contrôle de sécurité renforcé :
+		check_ajax_referer( 'content_cards', 'nonce' );
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die();
+		}
+		$raw = isset($_POST['shortcode']) ? $_POST['shortcode'] : '';
+		if ( strpos( $raw, '[contentcards' ) !== 0 ) {
+			wp_die();
+		}
+		$atts = shortcode_parse_atts($raw);
+		$atts = array_map('sanitize_text_field', $atts);
+		echo do_shortcode('[contentcards ' . http_build_query($atts, '', ' ') . ']');
+		wp_die();
 	}
 
     /**
@@ -1076,3 +1030,95 @@ function the_cc_image( $size = 'thumbnail', $args = array() ) {
 	$result = "<img src=\"{$img}\" {$attributes}>";
 	echo $result;
 }
+// =======================================================
+// MODIF : bloc déplacé – chargement des réglages APRÈS init
+// =======================================================
+require_once( plugin_dir_path( __FILE__ ) . 'tiny/tiny.options.php' ); // chargé une seule fois, hors tableau
+function get_contentcards_settings() {
+    return array(
+	// require_once ( self::$plugin_path . 'includes/options.php' );
+		// self::$settings = array(
+			'page' => array(
+				'title' 			=> __( 'Content Cards Settings', 'content-cards' ),
+				'menu_title'	=> __( 'Content Cards', 'content-cards' ),
+				'slug' 				=> 'content-cards-settings',
+				'option'			=> 'content-cards_options',
+				// optional
+				// 'description'	=> __( 'Some general information about the plugin', 'content-cards' ),
+			),
+			'sections' => array(
+				"general" => array(
+					'title'				=> '',
+					'fields' => array(
+						'patterns' => array(
+							'title'				=> __('oEmbed White List','content-cards'),
+							'callback' 		=> 'textarea',
+							'attributes' 	=> array (
+								'rows'	=> 10,
+								'cols'	=> 60,
+							),
+							'description' => __( 'A list of domain names, i.e. <code>domain.com</code>, one per line.', 'content-cards' ),
+						),
+						'skin' => array(
+							'title'				=> __('Snippet Skin','content-cards'),
+							'callback' 		=> 'listfield',
+							'list' => Content_Cards::get_skins(), // 'list' 				=> self::get_skins(),
+							'description' => __( 'Can be overwritten by theme.', 'content-cards' ),
+						),
+						'target' => array(
+							'title'				=> __('Link Target','content-cards'),
+							'label'				=> __('Open links in new tab?','content-cards'),
+							'callback' 		=> 'checkbox',
+						),
+						'update_interval' => array(
+							'title'				=> __('Update Interval','content-cards'),
+							'callback' 		=> 'listfield',
+							'list'	 			=> array(
+								HOUR_IN_SECONDS     => __( 'Hourly', 'content-cards' ),
+								2 * HOUR_IN_SECONDS => __( 'Every 2 Hours', 'content-cards' ),
+								6 * HOUR_IN_SECONDS => __( 'Every 6 Hours', 'content-cards' ),
+								DAY_IN_SECONDS / 2  => __( 'Twice Daily', 'content-cards' ),
+								DAY_IN_SECONDS      => __( 'Daily', 'content-cards' ),
+							),
+							'description' => __( 'How often should Content Cards check for changes in OpenGraph data?', 'content-cards' ),
+						),
+						'default_image' => array(
+							'title'							=> __( 'Placeholder Image', 'content-cards' ),
+							'callback' 					=> 'upload',
+							'description' 			=> __( 'Placeholder image for links that do not have OpenGraph data. (Leave empty to use default image set by skin.)', 'content-cards' ),
+							'button_attributes' => array(
+								'value' 											=> __( 'Upload Image', 'content-cards' ),
+								'data-uploader_button_text' 	=> __( 'Upload Image', 'content-cards' ),
+								'data-uploader_title' 				=> __( 'Select File', 'content-cards' ),
+							),
+						),
+						'cache_images' => array(
+							'title'			=> __( 'Cache Images', 'content-cards' ),
+							'label'			=> __( 'Should Content Cards cache images to Media Library?', 'content-cards' ),
+							'callback' 	=> 'checkbox',
+						),
+						'word_limit' => array(
+							'title'				=> __( 'Word Limit', 'content-cards' ),
+							'description'	=> __( 'Limit maximum number of words in description.', 'content-cards' ),
+							'attributes' 	=> array (
+								'type' 	=> 'number',
+								'min' 	=> 0,
+							),
+						),
+					),
+				),
+			),
+			'l10n' => array(
+				'no_access'			=> __( 'You do not have sufficient permissions to access this page.', 'content-cards' ),
+				'save_changes' => esc_attr__( 'Save Changes', 'content-cards' ), // OLD 'save_changes'	=> esc_attr( 'Save Changes', 'content-cards' ),
+				'upload'				=> __( 'Upload File', 'content-cards' ),
+				'upload_button' => __( 'Upload', 'content-cards' ),
+			),
+		//);
+		    );
+}
+add_action( 'admin_init', function() {
+    if ( class_exists( 'Content_Cards' ) ) {
+        Content_Cards::$settings = get_contentcards_settings();
+    }
+});
