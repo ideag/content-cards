@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Content Cards (Secure Fork)
-Description: Fork sécurisé et compatible PHP 8.1+ du plugin "Content Cards". Permet d'intégrer tout lien web sous forme de carte enrichie.
-Version: 1.0.0
-Author: Pierre Lannes
+Plugin Name: Content Cards (secure fork)
+Description: Embed any link from the web easily as a beautiful Content Card — Secure fork by Pierre Lannes
+Version: 1.0.1-secure
+Author: Pierre Lannes (original by Arūnas Liuiza)
 Author URI: https://www.pierre-lannes.fr
 License: GPL2
 Text Domain: content-cards
