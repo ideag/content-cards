@@ -93,6 +93,9 @@ class tiny_OpenGraph implements Iterator
 		$old_libxml_error = libxml_use_internal_errors(true);
 
 		$doc = new DOMDocument();
+        libxml_disable_entity_loader(true); // Prévient les entités externes (obsolete mais inoffensif)
+        $doc->resolveExternals = false;    // N'interprète pas les entités externes
+        $doc->substituteEntities = false;  // Ne substitue pas les entités XML
 		$doc->loadHTML($HTML);
 
 		libxml_use_internal_errors($old_libxml_error);
