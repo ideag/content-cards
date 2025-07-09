@@ -1,4 +1,11 @@
 (function($){
+    function esc_attr(str) {
+	return String(str)
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+}
 	var media = wp.media, contentcards_view;
 	var base = {
 		state: [],
@@ -78,7 +85,7 @@
                         if ( 'target' === key ) {
                             result[key] = '_blank';
                         }
-                        atts += ' ' + key  + '="' + result[key] + '"';
+                        atts += ' ' + key + '="' + esc_attr(result[key]) + '"';
                     }
                     tinyMCE.activeEditor.insertContent( '[contentcards' + atts + '] ' );
         //         	var s = '[contentcards url="' + e.data.url + '"' + ( e.data.target ? ' target="_blank"' : '' ) + ( e.data.class ? ' class="' + e.data.class + '"' : '' ) + ']'
